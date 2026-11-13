@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Model review — how GLM-5.3-flash worked, where it went wrong, and what we could have done differently</title>
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 46em; margin: 2em auto;
+         padding: 0 1.5em; line-height: 1.55; color: #222; }
+  h1 { font-size: 1.55em; border-bottom: 2px solid #888; padding-bottom: 0.3em; }
+  h2 { font-size: 1.25em; margin-top: 1.8em; border-bottom: 1px solid #ccc; padding-bottom: 0.2em; }
+  h3 { font-size: 1.05em; margin-bottom: 0.3em; }
+  code { background: #f2f2f2; padding: 0.1em 0.3em; border-radius: 3px;
+         font-family: Consolas, Menlo, monospace; font-size: 0.92em; }
+  table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+  th, td { border: 1px solid #999; padding: 0.4em 0.6em; text-align: left; }
+  th { background: #ececec; }
+  blockquote { border-left: 4px solid #aaa; margin: 1em 0; padding: 0.2em 1em; color: #444; background: #f8f8f8; }
+  ul, ol { padding-left: 1.4em; }
+  .verdict { font-style: italic; }
+  .status { color: #1a7a1a; font-weight: bold; }
+  .warn { background: #fff6e5; border: 1px solid #e0c060; padding: 0.7em 1em; margin: 1em 0; }
+  .good { background: #eef7ee; border: 1px solid #a0c8a0; padding: 0.7em 1em; margin: 1em 0; }
+  .pattern { background: #f4f0f8; border-left: 4px solid #7a5aa0; padding: 0.2em 1em; margin: 1.2em 0; }
+</style>
+</head>
+<body>
+
+<h1>Model review<br><small>how GLM-5.3-flash worked, where it went wrong, and what we could have done differently</small></h1>
+
+<p><strong>The setup:</strong> the group project runs as a model comparison — one
+partner on <code>z-ai/glm-5.3-flash</code>, the other on <code>z-ai/glm-5.3</code>,
+swapping for the next analysis. The documents in <code>group_project/</code>
+(<code>01-qc</code> through <code>04-summary</code>, plus the archived
+<code>05</code>) were produced by the <strong>flash</strong> model. Every claim in
+this review was checked against the actual data before being called a problem —
+not just by reading the code. Seven issues were found; all seven are fixed in the
+.qmd files, and every document has been re-rendered.</p>
+
+<h2>1. How the model worked — what it did well</h2>
+
+<div class="good">
+<p>Flash was <strong>very reliable at following explicit written instructions</strong>.
+Every hard rule from the workshop instructions, it followed exactly:</p>
+<ul>
+  <li><strong>Raw counts into DESeq2</strong> — the leftover
+      <code>data/genes_by_community.csv</code> is genuine raw-count DESeq2 output
+      (baseMean, log2FoldChange, padj).</li>
+  <li><strong>The cross-table rule</strong> — define the group from one table, test
+      the other — done correctly: <code>data/my_sample_groups.csv</code> derives
+      community labels from the microbiome's <em>Lactobacillus</em> fraction, then
+      the DESeq2 test runs on the <strong>gene</strong> table. That is the week's
+      hardest habit, and it got it right.</li>
+  <li>Column-order checks before testing, fixed permutation seeds,
+      <code>by = "margin"</code>, Fisher's exact test over chi-square for the small
+      cells, a sensitivity analysis instead of deleting shallow samples,
+      "Choices made" sections, "Check me" items.</li>
+</ul>
+<p>This matters for what comes next, because <em>all</em> of its failures happened
+in a place no instruction covered.</p>
+</div>
+
+<h2>2. Where it went wrong — three failure patterns</h2>
+
+<div class="pattern">
+<h3>Pattern 1 — the prose and the code drifted apart <span style="color:#8a1a1a;">(the dangerous one)</span></h3>
+<p>The model writes fluent, confident, well-structured English <em>about its own
+code</em> — but that English is generated from the text it already wrote, not from
+checking what the code actually computed. <strong>It narrates; it does not look.</strong>
+Three separate examples:</p>
+<ul>
+  <li>The text said Bray-Curtis was "computed on relative abundances"; the code
+      (<code>tax_transform("identity")</code>) computed it on <strong>raw
+      counts</strong> — two different things when nine samples are shallow.</li>
+  <li>The text said the two-category test was "positive vs not BV"; the code
+      (<code>md$bv != "negative"</code>) tested <strong>any sign of BV</strong>.</li>
+  <li>The verdict labelled 49% / 43% / 42% as "counting intermediate as <em>not</em>
+      BV" — it was the <strong>opposite</strong>.</li>
+</ul>
+</div>
+
+<div class="pattern">
+<h3>Pattern 2 — confident mechanics it never ran</h3>
+<p>The model described its own pipeline in ways that sound right but were never
+checked:</p>
+<ul>
+  <li>"The points shift a little every time <code>ord_calc</code> runs" —
+      <strong>false</strong>. PCoA is deterministic: rerunning gives the identical
+      map.</li>
+  <li>The check-me <code>sum(d$species$B001)</code> — <strong>errors</strong>.
+      The count table is a plain matrix; <code>$</code> does not work on matrices.
+      The model wrote a verification instruction it had never once executed.</li>
+  <li>Same habit in the practice notebook: it filled in the human's
+      "<em>Answer before running anything below</em>" boxes with answers instead of
+      leaving them blank. The numbers happened to be right (checked: 22756 ✓,
+      89% zeros ✓) — but it cannot leave a blank unfilled, and it fills those
+      blanks without running anything.</li>
+</ul>
+</div>
+
+<div class="pattern">
+<h3>Pattern 3 — duplication, then drift</h3>
+<p>Five documents where four would do, including <strong>two one-page summaries of
+the same result</strong>. Numbers that get copied forward instead of recomputed
+drift: the duplicated document (<code>03</code>'s "Choices made") cited shares of
+"49 / 46 / 46" that exist nowhere in the data. The one page that <em>did</em>
+recompute everything (<code>04</code>'s evidence table) was the model's best idea —
+it just never applied it everywhere.</p>
+</div>
+
+<div class="pattern">
+<h3>And one gap — the right instinct, missing machinery</h3>
+<p>Flash <em>hedged</em> correctly in words ("treat small p-values here as
+<em>suggestive</em>, not settled") but never built the machinery that makes the
+hedge true: no multiple-testing correction, no dispersion check behind the
+PERMANOVA. It produces the <strong>verbal form</strong> of good statistics without
+the substance.</p>
+</div>
+
+<h2>3. What could have gone wrong (and why each error was dangerous)</h2>
+
+<div class="warn">
+<p>None of the seven errors would have crashed a render. Every document compiled
+beautifully, read beautifully, and would have passed a normal read-through. That
+is what makes this failure class dangerous:</p>
+<ul>
+  <li><strong>The distance bug could have flipped a verdict.</strong> Bray-Curtis
+      on raw counts measures "different depth <em>and</em> different community".
+      If the shallow samples had clustered in one arm, the test would have
+      reported a community difference that was really just a sequencing-depth
+      difference. Here the nine shallow samples happened to be spread across
+      arms, so the verdict survived — but that was luck, not design.</li>
+  <li><strong>The swapped BV labels could have misled the group.</strong> If you
+      had presented "43% of the pill arm is BV-positive" when the real
+      positive-only number is 36%, anyone quoting the slide would be quoting a
+      number that belongs to a different definition. In a BV study, that is not
+      a small thing.</li>
+  <li><strong>The uncorrected p-value could have set tomorrow's agenda on a
+      false lead.</strong> "Pill vs injectable, p ≈ 0.03" invites chasing it with
+      the gene table. After correcting for three comparisons it is p ≈ 0.10 —
+      no longer even suggestive on its own. Yesterday's report would have sent
+      the group hunting with more confidence than the data supports.</li>
+  <li><strong>The broken check-mes could have taught you a command that errors.</strong>
+      Type <code>d$species$B001</code> into your own console and you learn the
+      wrong syntax from a document meant to teach the right one.</li>
+</ul>
+<p><strong>What saved the project:</strong> the errors were in <em>reporting
+fidelity</em>, not scientific direction. The headline answer — arm explains very
+little, BV explains a lot and is spread evenly across arms — was right all along
+and survived every fix. The model got the direction right and the details wrong,
+in ways only someone re-running the code would catch.</p>
+</div>
+
+<h2>4. The seven issues, with their fixes</h2>
+
+<h3>1. <code>02</code>'s distance didn't match its own words <span class="status">fixed</span></h3>
+<p>Text promised relative abundances; code used raw counts. Fix: the main pipeline
+now converts counts to proportions first (<code>tax_transform("compositional")</code>);
+the raw-count version is kept as a robustness row. Did the results move? Barely —
+the verdict is untouched:</p>
+<table>
+  <tr><th>Test</th><th>Before (raw counts)</th><th>After (proportions)</th></tr>
+  <tr><td>Arm alone</td><td>R&sup2; = 3.3%, p = 0.105</td><td>R&sup2; = 3.3%, p = 0.147</td></tr>
+  <tr><td>Arm, adjusted for BV / pH / STI / batch</td><td>p &asymp; 0.08</td><td>p &asymp; 0.11</td></tr>
+  <tr><td>BV</td><td>R&sup2; &asymp; 13%, p = 0.001</td><td>R&sup2; &asymp; 14%, p = 0.001</td></tr>
+  <tr><td>Pill vs injectable</td><td>p &asymp; 0.02</td><td>p &asymp; 0.03</td></tr>
+  <tr><td>Low-depth samples dropped</td><td>R&sup2; &asymp; 5%, p = 0.014</td><td>R&sup2; &asymp; 6%, p = 0.011</td></tr>
+</table>
+
+<h3>2. <code>03</code>'s verdict mislabelled its numbers — the swap <span class="status">fixed</span></h3>
+<p>"49% / 43% / 42%" described as "counting intermediate as <em>not</em> BV" — it
+was counting intermediate <strong>as</strong> BV (positive-only is 49 / 36 / 38).
+"Choices made" also cited shares of "49 / 46 / 46" that do not exist in the data,
+and the "two-category version" was described as "positive vs not" while the code
+tested "any sign of BV vs none". All fixed. No result impact — same test, same
+data; only the prose was wrong.</p>
+
+<h3>3. <code>01</code>'s check-me was broken <span class="status">fixed</span></h3>
+<p><code>d$species$B001</code> errors — matrices need brackets. Now
+<code>sum(d$species[, "B001"])</code>.</p>
+
+<h3>4. <code>02</code> claimed the PCoA points "shift a little every time" <span class="status">fixed</span></h3>
+<p>False — PCoA is deterministic. Reworded.</p>
+
+<h3>5. Two overlapping one-page summaries <span class="status">fixed</span></h3>
+<p><code>05-bv-summary</code> duplicated <code>04-summary</code>'s BV result — the
+duplication is where the numbers drifted. <code>05</code> moved to
+<code>group_project/archive/</code>.</p>
+
+<h3>6. No multiple-testing correction on the pairwise tests <span class="status">fixed</span></h3>
+<p>Three pairwise tests were reported with raw p-values. Fix: a
+<code>p_holm</code> column (Holm correction — roughly, the smallest p gets
+multiplied by 3). <strong>Did the results move? Yes:</strong> pill-vs-injectable
+goes from p = 0.03 to <strong>p &asymp; 0.10 after correction</strong>.</p>
+
+<h3>7. No dispersion check behind the PERMANOVA <span class="status">fixed</span></h3>
+<p>PERMANOVA can be significant just because one group is more <em>scattered</em>,
+not because it sits somewhere else. Fix: new section 2&frac12; in <code>02</code>
+runs <code>vegan::betadisper</code> for both BV and arm. Result: no dispersion
+difference (BV p = 0.52, arm p = 0.78) — so the BV finding is a genuine shift,
+which <em>strengthens</em> the headline.</p>
+
+<h2>5. The headline finding</h2>
+
+<p class="verdict">The science survived; the report could not be trusted. After all
+seven fixes, the conclusions stand: contraceptive method explains ~3% of the
+variation (p &asymp; 0.15), BV explains ~14% and is spread evenly across arms.
+Only one number genuinely weakened — pill-vs-injectable, from p &asymp; 0.03
+suggestive to p &asymp; 0.10 not even suggestive after correction. Flash got the
+direction right and the details wrong, in ways that only someone re-running the
+code would catch.</p>
+
+<h2>6. What we could have done differently</h2>
+
+<ol>
+  <li><strong>Make verification a prompt, not a habit you hope for.</strong> One
+      added line — <em>"Execute every check-me item yourself before
+      rendering"</em> — would have caught the broken <code>$</code> and the false
+      "points shift" claim. Flash does not do this unprompted, but it does do it
+      when told.</li>
+  <li><strong>Require a numbers audit.</strong> Ask for a table where every number
+      in the verdict is paired with the exact expression that produced it. A
+      number in prose with no code chunk behind it is a guess.</li>
+  <li><strong>One source of truth.</strong> Do not allow a second document to
+      <em>state</em> a number — only to <em>recompute</em> it. That single rule
+      would have prevented the <code>04</code>/<code>05</code> drift entirely.</li>
+  <li><strong>In review, ask for the claim&rarr;code mapping.</strong> The
+      question that catches Pattern 1: <em>"For each sentence in the verdict,
+      quote the chunk that supports it."</em> Any sentence with no chunk is the
+      model narrating, not reporting.</li>
+  <li><strong>Protect the human-only spaces.</strong> Tell the model explicitly
+      not to fill prediction/answer boxes. Those boxes exist to make <em>you</em>
+      predict before peeking — filling them defeats the exercise even when the
+      answers are right.</li>
+</ol>
+
+<h2>7. The review method — three passes, in detail</h2>
+
+<p>These are the three checks that would have caught five of the seven errors
+before render. Each takes a few minutes per document, and the worked examples
+are the real flash errors.</p>
+
+<h3>Pass 1 — text-vs-code drift <em>(the killer)</em></h3>
+<p><strong>The problem:</strong> the model writes English about its code that
+sounds right but isn't. The words and the code were generated separately, and
+nobody checked they agree.</p>
+<p><strong>How:</strong> take the verdict (or any results paragraph) one
+sentence at a time. For each sentence making a factual claim, find the chunk
+that produced it and read the code <em>literally</em>.</p>
+<blockquote>
+<p><strong>Example A.</strong> Sentence: <em>"the simpler two-category version
+(BV positive vs not)…"</em> — the chunk says
+<code>fisher.test(table(md$arm, md$bv != "negative"))</code>. Translated
+literally: "not negative" means <strong>positive or intermediate</strong>. The
+sentence says "positive vs not". They don't match — caught.</p>
+<p><strong>Example B.</strong> Sentence: <em>"Bray-Curtis distance, computed on
+relative abundances"</em> — the chunk says
+<code>tax_transform("identity")</code>. "Identity" literally means <em>don't
+transform</em>: raw counts. The sentence says relative abundances. Caught.</p>
+</blockquote>
+<p>The skill it needs is one you already have: reading code slowly and
+literally — exactly what the model doesn't do to itself.</p>
+
+<h3>Pass 2 — unexecuted self-descriptions</h3>
+<p><strong>The problem:</strong> the model describes its own pipeline in ways it
+never verified. These read as fact but are guesses dressed as observations.</p>
+<p><strong>How:</strong> two sub-passes.</p>
+<ul>
+  <li><em>Run every "Check me" item yourself.</em> These are gift-wrapped — the
+      model wrote your verification script.
+      <code>sum(d$species$B001)</code> errors in ten seconds: proof the author
+      never ran its own check.</li>
+  <li><em>Treat every "this is how it works" sentence as a hypothesis.</em>
+      Test the cheapest version. "The points shift a little every time
+      <code>ord_calc</code> runs"? Run the chunk twice — the map is
+      <em>identical</em>, because PCoA is deterministic. Claim dead in fifteen
+      seconds.</li>
+</ul>
+
+<h3>Pass 3 — prose numbers without provenance</h3>
+<p><strong>The problem:</strong> numbers that appear in text but are never
+computed by any chunk in the document. They can't be checked from inside the
+document, because nothing produced them — they were recalled, not
+calculated.</p>
+<p><strong>How:</strong> scan for every number in the prose (p-values,
+percentages, counts) and ask: <em>is there a chunk whose output equals
+this?</em> Three findings are possible:</p>
+<ol>
+  <li>a chunk computes it — fine;</li>
+  <li>a chunk computes something close but different — drift (that's pass 1
+      again);</li>
+  <li><strong>no chunk anywhere relates to it — a guess.</strong> Flag it,
+      recompute it by hand, replace it.</li>
+</ol>
+<blockquote>
+<p><strong>Example.</strong> <code>03</code>'s "Choices made": <em>"moves the
+shares to 49% / 46% / 46%"</em>. No chunk computes that. One console line —
+<code>proportions(table(md$arm, md$bv), 1)</code> — gives the real shares:
+<strong>49 / 43 / 42</strong>. The "49 / 46 / 46" existed nowhere. It was the
+model recalling numbers it never had.</p>
+</blockquote>
+<p><strong>The structural fix</strong> is the rule flash invented for one page
+and forgot everywhere else: a number should only ever <em>appear</em> via code
+— a chunk computes it, the prose refers to it. Then it can't drift, because
+changing the data changes the number.</p>
+
+<h3>The portable version — one prompt for reviewing any model's document</h3>
+<blockquote>
+<p>For each document: (1) go through the verdict sentence by sentence and, for
+every factual claim, quote the chunk that produced it — flag any sentence with
+no chunk; (2) execute every "Check me" item and report any that errors or
+disagrees; (3) list every number in the prose that no chunk computes, and
+recompute it from the data.</p>
+</blockquote>
+
+<h2>8. For today's swap</h2>
+
+<p>When reviewing the partner's GLM-5.3 documents, run the three passes above —
+the method is identical whichever model wrote the document, and the bigger
+model may simply make fewer of these mistakes rather than different ones. Watch
+especially for pass 1 (text-vs-code drift): it produced the two most dangerous
+flash errors, and it is the one a smooth, fluent report hides best. If the
+partner's .qmd files are shared into this workspace, the same review can be
+run on them — turning this into a genuine model comparison: which model made
+which class of error, and which errors the review method caught.</p>
+
+<h2>9. How to check this work yourself</h2>
+
+<ul>
+  <li>Open <code>02-community-composition.html</code> and find the robustness
+      table: the "Bray (proportions)" and "Bray (raw counts)" rows should be
+      nearly identical — the evidence the distance fix didn't manufacture the
+      conclusion.</li>
+  <li>In the console:
+      <code>ps |> tax_transform("compositional") |> dist_calc("bray") |> dist_permanova(variables = "arm", n_perms = 999, seed = 202)</code>
+      should print R&sup2; = 0.033, p &asymp; 0.15.</li>
+  <li>Section 3 of <code>02</code>: the <code>p_holm</code> column should read
+      0.099 / 0.65 / 0.65. In the console:
+      <code>p.adjust(c(0.033, 0.602, 0.325), "holm")</code> gives the same
+      numbers.</li>
+  <li>For <code>03</code>: run <code>table(md$arm, md$bv)</code> yourself and
+      divide — injectable 19 positive out of 39 = 49%.</li>
+  <li>Type <code>d$species$B001</code> in the console and watch it error — the
+      failure the old check-me would have taught you by accident.</li>
+</ul>
+
+</body>
+</html>

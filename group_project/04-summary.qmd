@@ -1,0 +1,155 @@
+---
+title: "Study B — one-page summary: do the three methods differ in community composition?"
+format: html
+editor: source
+execute:
+  warning: false
+  message: false
+  echo: false
+---
+
+The full workings live in `02-community-composition.qmd` (ordination and
+PERMANOVA) and `03-bv-by-arm.qmd` (the BV check). This page is the version
+to present: the answer, the two figures that carry it, and the numbers
+behind it.
+
+```{r setup}
+library(tidyverse)
+library(here)
+library(microViz)
+library(phyloseq)
+
+source(here("R/count_tables.R"))
+
+dd <- read_counts("group_b")
+ps <- as_counts("group_b", "microbiome", data = dd)
+psb <- ps |> tax_transform("compositional") |> dist_calc("bray")
+
+# helper: run a PERMANOVA for arm, return its R2 and p
+arm_result <- function(ps_obj) {
+  t <- as.data.frame(perm_get(
+    ps_obj |> dist_permanova(variables = "arm", n_perms = 999, seed = 202, verbose = FALSE)
+  ))
+  tibble(r2 = round(t$R2[1], 3), p = t[["Pr(>F)"]][1])
+}
+```
+
+## The answer
+
+**No — contraceptive method explains almost none of the variation in these
+vaginal communities (~3%, p ≈ 0.15). What does explain it is BV status
+(~14%, p = 0.001), and BV is spread evenly across the arms. The one
+suggestive exception is pill vs injectable (p ≈ 0.03, but ≈ 0.10 once the
+three comparisons are corrected for), which agrees with a
+simple biology check and is tomorrow's lead.**
+
+## Figure 1 — the map: three overlapping crowds, not three islands
+
+Each point is one participant's vaginal community. Bray-Curtis PCoA: points
+close together have similar communities.
+
+```{r}
+psb |> ord_calc("PCoA") |> ord_plot(colour = "arm") +
+  labs(title = "Bray-Curtis PCoA, coloured by contraceptive method")
+```
+
+The same points, coloured by what actually separates them:
+
+```{r}
+psb |> ord_calc("PCoA") |> ord_plot(colour = "bv") +
+  labs(title = "… coloured by BV status")
+```
+
+## Figure 2 — BV is everywhere, in every arm
+
+BV prevalence by arm; Fisher's exact test p ≈ 0.45 (details in
+`03-bv-by-arm.qmd`). No arm is protected or penalised.
+
+```{r}
+dd$metadata |>
+  count(arm, bv) |>
+  ggplot(aes(arm, n, fill = bv)) +
+  geom_col(position = "fill") +
+  scale_y_continuous(labels = scales::percent) +
+  labs(x = NULL, y = "Share of samples", fill = "BV status",
+       title = "BV status by contraceptive arm")
+```
+
+## The evidence, in one table
+
+```{r}
+# overall PERMANOVA: the full multi-variable model, so row 1 = arm, row 2 = bv
+overall  <- psb |> dist_permanova(variables = c("arm", "bv", "ph", "any_sti", "rnaseq_batch"),
+                                  n_perms = 999, seed = 202, by = "margin")
+ov       <- as.data.frame(perm_get(overall))
+arm_r2   <- round(ov$R2[1], 3);  arm_p <- ov[["Pr(>F)"]][1]
+bv_r2    <- round(ov$R2[2], 3);  bv_p  <- ov[["Pr(>F)"]][2]
+
+# pairwise: pill vs injectable
+ids <- dd$metadata$sample_id[dd$metadata$arm %in% c("pill", "injectable")]
+pw  <- arm_result(prune_samples(ids, ps) |> tax_transform("compositional") |> dist_calc("bray"))
+
+# sensitivity: drop the nine low-depth samples (< 15,000 reads)
+lib <- tibble(sample_id = dd$metadata$sample_id, reads = colSums(dd$species))
+sens <- arm_result(
+  prune_samples(setdiff(dd$metadata$sample_id, lib$sample_id[lib$reads < 15000]), ps) |>
+    tax_transform("compositional") |> dist_calc("bray"))
+
+# lactobacillus share by arm
+tax <- dd$taxonomy
+lacto <- colSums(dd$species[tax$Genus == "Lactobacillus", ]) / colSums(dd$species)
+lacto_md <- dd$metadata |>
+  mutate(lacto = lacto[sample_id]) |>
+  group_by(arm) |> summarise(median = median(lacto))
+
+arm_alone <- arm_result(psb)
+
+tibble(
+  claim = c("Arm alone",
+            "Arm after BV, pH, STI and batch are accounted for",
+            "BV status's share of the variation between samples",
+            "Pill vs injectable, tested alone",
+            "Same overall test, 9 low-depth samples dropped",
+            "Lactobacillus share, pill vs other arms (median)"),
+  number = c(
+    paste0("R² = ", arm_alone$r2, ", p = ", arm_alone$p),
+    paste0("R² = ", arm_r2, ", p = ", round(arm_p, 3)),
+    paste0("R² = ", bv_r2, ", p = ", bv_p),
+    paste0("R² = ", pw$r2, ", p = ", pw$p),
+    paste0("R² = ", sens$r2, ", p = ", sens$p),
+    paste0(scales::percent(lacto_md$median[lacto_md$arm == "pill"], 0.1),
+           " vs ",
+           scales::percent(median(lacto_md$median[lacto_md$arm != "pill"]), 0.1))),
+  evidence = c("PERMANOVA, `02-community-composition`",
+               "PERMANOVA, `02-community-composition`",
+               "PERMANOVA, `02-community-composition`",
+               "Pairwise PERMANOVA, `02-community-composition`",
+               "Sensitivity analysis, `02-community-composition`",
+               "Biology check, `02-community-composition`")
+) |>
+  knitr::kable(col.names = c("Claim", "Number", "Where it comes from"))
+```
+
+## The one-liner for the slides
+
+> Overall, no: method explains ~3% of the variation in community
+> composition (p ≈ 0.15); BV explains ~14% and is evenly spread across arms
+> (p ≈ 0.45). Pill vs injectable is the suggestive exception (p ≈ 0.03,
+> ≈ 0.10 after Holm correction; Lactobacillus share 85% vs ~45%) — chase it
+> with the gene table.
+
+## Choices made
+
+- All methods, thresholds and seeds are inherited from the two full reports
+  (`02-community-composition.qmd`, `03-bv-by-arm.qmd`); nothing was
+  re-decided here — this page only re-presents them.
+- Main distance **Bray-Curtis on relative abundances** (compositional
+  transform), matching `02-community-composition.qmd`; Aitchison and Jaccard
+  agreed in the full report and are not repeated here.
+- **999 permutations, seed 202** for every PERMANOVA on this page.
+- Figures shown are **arm-coloured and BV-coloured PCoA** plus the BV bar
+  chart; alternatives (pH, STI, batch panels) are in the full report and
+  changed nothing.
+- The evidence table **recomputes** the numbers with the same seeds rather
+  than copy-pasting them, so it would visibly disagree if the underlying
+  reports were changed.

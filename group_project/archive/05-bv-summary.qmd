@@ -1,0 +1,149 @@
+---
+title: "Study B — one-page summary: is bacterial vaginosis more common in one arm?"
+format: html
+editor: source
+execute:
+  warning: false
+  message: false
+  echo: false
+---
+
+The full workings live in `03-bv-by-arm.qmd`; the community-composition
+context comes from `02-community-composition.qmd`. This page is the version
+to present: the answer, the figure and table that carry it, and the
+one-liner for the slides.
+
+```{r setup}
+library(tidyverse)
+library(here)
+
+source(here("R/count_tables.R"))
+
+dd <- read_counts("group_b")
+md <- dd$metadata
+```
+
+## The answer
+
+**No.** BV affects roughly **43–49%** of participants in *every* arm, and
+the differences between arms are what chance produces (Fisher p ≈ 0.45).
+No contraceptive method in this study is associated with more or less BV.
+
+## Figure 1 — BV status by arm: same story everywhere
+
+```{r}
+md |>
+  count(arm, bv) |>
+  ggplot(aes(arm, n, fill = bv)) +
+  geom_col(position = "fill") +
+  scale_y_continuous(labels = scales::percent) +
+  labs(x = NULL, y = "Share of samples", fill = "BV status",
+       title = "BV status by contraceptive arm — no arm stands out")
+```
+
+## Figure 2 — the label means what it says
+
+If the `bv` column is trustworthy, BV-positive samples should carry more
+*Gardnerella*, the genus most associated with bacterial vaginosis. Each
+point is one sample; the y-axis is compressed to show all of them.
+
+```{r}
+tax <- dd$taxonomy
+gardnerella <- colSums(dd$species[tax$Genus == "Gardnerella", ]) / colSums(dd$species)
+
+md |>
+  mutate(gardnerella = gardnerella[sample_id]) |>
+  ggplot(aes(bv, gardnerella, colour = bv)) +
+  geom_jitter(width = 0.15, alpha = 0.6, size = 1.5) +
+  scale_y_sqrt() +
+  stat_summary(fun = median, geom = "crossbar", colour = "black", width = 0.5) +
+  scale_colour_manual(values = c("negative" = "grey60", "intermediate" = "orange",
+                                 "positive" = "firebrick"), guide = "none") +
+  labs(x = "BV status", y = "Gardnerella share of reads (sqrt scale)",
+       title = "Gardnerella tracks the BV label — the label is safe to use")
+```
+
+## The evidence, in one table
+
+```{r}
+# 1. does the bv column agree with the Nugent score it should derive from?
+nugent_cut <- cut(md$nugent, c(-Inf, 3, 6, Inf),
+                  labels = c("neg", "intermediate", "pos"))
+expected   <- recode(md$bv, negative = "neg", intermediate = "intermediate", positive = "pos")
+mismatches <- sum(nugent_cut != expected)
+
+# 2. the counts and the tests
+t3 <- table(md$arm, md$bv)
+fisher3 <- fisher.test(t3)$p.value
+fisher2 <- fisher.test(table(md$arm, md$bv != "negative"))$p.value
+prev <- md |>
+  mutate(any_bv = bv != "negative") |>
+  group_by(arm) |>
+  summarise(share = scales::percent(mean(any_bv), 0.1)) |>
+  deframe()
+
+# 3. gardnerella medians (the sanity check behind Figure 2)
+gard <- md |>
+  mutate(gardnerella = gardnerella[sample_id]) |>
+  group_by(bv) |>
+  summarise(med = scales::percent(median(gardnerella), 0.1)) |>
+  deframe()
+
+tibble(
+  claim = c("BV column vs Nugent score: mismatches",
+            paste0("BV-positive or intermediate, by arm (",
+                   names(prev)[1], " / ", names(prev)[2], " / ", names(prev)[3], ")"),
+            "Arm and BV status, three categories (Fisher)",
+            "Arm and BV status, positive vs not (Fisher)",
+            "Gardnerella share, BV-positive vs negative (median)"),
+  number = c(
+    as.character(mismatches),
+    paste(prev, collapse = " / "),
+    paste0("p = ", round(fisher3, 2)),
+    paste0("p = ", round(fisher2, 2)),
+    paste0(gard[["positive"]], " vs ", gard[["negative"]])
+  ),
+  evidence = c("Anatomy-style label check",
+               "Contingency table",
+               "Fisher's exact test, `03-bv-by-arm`",
+               "Fisher's exact test, `03-bv-by-arm`",
+               "Biology check, `03-bv-by-arm`")
+) |>
+  knitr::kable(col.names = c("Claim", "Number", "Where it comes from"))
+```
+
+## Why this matters for the other question
+
+Yesterday's ordination found BV status is the dominant structure in these
+communities (R² ≈ 13%, p = 0.001) while arm explains almost nothing
+(R² ≈ 3%, p ≈ 0.1). If BV had clustered in one arm, that arm's community
+difference would have had a boring explanation. It did not: BV is spread
+evenly, so it is a **rival explanation** for community patterns but **not a
+confounder** of the arm comparison — and the suggestive pill-vs-injectable
+signal from `02-community-composition` cannot be explained away as "the
+pill arm simply had less BV". (If anything, the pill arm had the *least*.)
+
+## The one-liner for the slides
+
+> BV affects 43–49% of participants in every arm (Fisher p ≈ 0.45); the
+> labels validate against Nugent scores and *Gardnerella* abundance. No
+> method is associated with more or less BV — so BV, the main driver of
+> community composition, is a rival explanation but not a confounder.
+
+## Choices made
+
+- All methods are inherited from `03-bv-by-arm.qmd`; nothing was re-decided
+  here — this page only re-presents them.
+- Main test **Fisher's exact test**, chosen because two table cells held
+  fewer than 5 samples; chi-square agreed (p ≈ 0.47 / 0.84).
+- Ran the test **both ways** — three BV categories, and positive-vs-not;
+  the alternative was to pick one and hope.
+- Treated **`intermediate` as not BV** in the two-category version;
+  lumping it with positive instead moves the shares to 49% / 46% / 46%
+  and changes nothing.
+- Kept **all 93 samples**, including the nine low-depth ones: BV status
+  comes from Nugent scoring, not sequencing depth, so shallow samples are
+  still valid rows here.
+- Figures and table **recompute** their numbers from the raw data rather
+  than copy-pasting, so they would visibly disagree if `03-bv-by-arm.qmd`
+  were changed.

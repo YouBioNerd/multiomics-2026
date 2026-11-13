@@ -1,12 +1,7 @@
-.Rproj.user
-.Rhistory
-.RData
-.DS_Store
-._*
-*_files/
-/.quarto/
-/_site/
+# Junk file R creates when plotting
+Rplots.pdf
 
-# Rendered notebook output. Participants render locally; the template ships
-# only the .qmd sources.
-*.html
+# Quarto byproducts
+.quarto/
+*_files/
+*_cache/

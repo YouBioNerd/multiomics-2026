@@ -1,0 +1,294 @@
+---
+title: "Study B — do the three contraceptive methods differ in community composition?"
+format: html
+editor: source
+execute:
+  warning: false
+  message: false
+---
+
+**The question:** do the vaginal communities of people on the pill, the
+injectable, and the ring differ from each other?
+
+**The plan**, built on Tuesday's ordination module:
+
+1. **Look** — draw a PCoA map of the samples, coloured by arm. A *PCoA*
+   (principal coordinate analysis) turns the pairwise distances between
+   samples into a 2-D map: points that are close together have similar
+   communities. We use *Bray-Curtis* distance, computed on relative
+   abundances: 0 means two samples share the same species proportions,
+   1 means nothing in common.
+2. **Test** — PERMANOVA (Anderson 2001,
+   <https://doi.org/10.1111/j.1442-9993.2001.01070.pp.x>). In plain words: it
+   asks "how much of the difference between samples is explained by arm, and
+   is that more than we'd see if we shuffled the arm labels at random?"
+   The *R²* is the "how much" (like R² in a regression); the *p-value* comes
+   from comparing it against 999 shuffles of the labels.
+3. **Worry** — check that the answer survives different distances, a stricter
+   low-depth filter, and the fact that BV status (which dominates these
+   communities) is tangled up with arm.
+
+Study B has one sample per participant, so there are no repeat visits to
+worry about.
+
+```{r setup}
+library(tidyverse)
+library(here)
+library(microViz)     # the pipeline: tax_transform |> dist_calc |> ord_calc |> ord_plot
+library(phyloseq)     # prune_samples() and friends come from here
+library(patchwork)    # lets us put two ggplots side by side with p1 + p2
+
+source(here("R/count_tables.R"))
+
+d  <- read_counts("group_b")                        # plain tables (metadata, species counts, …)
+ps <- as_counts("group_b", "microbiome", data = d)  # same data as a phyloseq object for microViz
+
+# The working object for most of the report: Bray-Curtis distance on
+# RELATIVE abundances. "compositional" turns each sample's counts into
+# shares of that sample's total first, so the distance compares proportions.
+# (On raw counts, a shallow sample looks different just for being shallow,
+# and we have nine shallow samples — see section 0.)
+psb <- ps |> tax_transform("compositional") |> dist_calc("bray")
+```
+
+# 0. A look at depth first
+
+Bray-Curtis uses *proportions*, so shallow samples are noisier: with few
+reads, the proportions are estimated badly. Before anything else, where do
+the library sizes sit?
+
+```{r}
+lib <- tibble(sample_id = d$metadata$sample_id,
+              arm       = d$metadata$arm,
+              reads     = colSums(d$species))
+
+ggplot(lib, aes(reads)) +
+  geom_histogram(bins = 30, fill = "grey70", colour = "white") +
+  labs(x = "Reads per sample (species table)", y = "Samples",
+       title = "Library sizes: a clear gap below ~15,000 reads")
+```
+
+There is a natural break in the histogram: nine samples sit at 14,500 reads
+or below and the next one up is at 15,200. I take anything below 15,000 as
+"low depth" and keep it in mind for the robustness checks later. I do **not**
+drop these samples from the main analysis — a rule picked by looking at the
+outcome of the test would be a rule picked to get an answer.
+
+```{r}
+# which samples the 15,000 rule catches
+lib |> filter(reads < 15000) |> arrange(reads)
+```
+
+- **Check me:** rerun the histogram chunk; the bar of small samples at the
+  left edge should hold `nrow(filter(lib, reads < 15000))` = 9 samples.
+
+# 1. Look: the ordination
+
+```{r}
+# ord_calc("PCoA") builds the map; ord_plot() draws it.
+# The axis titles show how much of the total variation each axis carries.
+psb |> ord_calc("PCoA") |> ord_plot(colour = "arm") +
+  labs(title = "Bray-Curtis PCoA, coloured by contraceptive method")
+```
+
+- **Check me:** the plot should have 93 points — `nrow(d$metadata)`.
+  Rerunning the chunk gives exactly the same map: PCoA is deterministic.
+- Do the three colours separate into three islands, or overlap? *Your answer:*
+
+The same points coloured by things that might explain more than arm:
+
+```{r}
+p1 <- psb |> ord_calc("PCoA") |> ord_plot(colour = "bv") +
+  labs(title = "… coloured by BV status")
+p2 <- psb |> ord_calc("PCoA") |> ord_plot(colour = "ph") +
+  labs(title = "… coloured by pH")
+p1 + p2
+```
+
+# 2. Test: PERMANOVA
+
+Arm on its own, then arm alongside the other sample characteristics.
+`by = "margin"` means each variable's R² is what is left after the others
+have had their share — without it, the result would depend on the order the
+variables are listed in. Seed 202 fixes the shuffle order so the numbers are
+reproducible.
+
+```{r}
+# arm alone
+psb |> dist_permanova(variables = "arm", n_perms = 999, seed = 202)
+```
+
+```{r}
+# arm together with the other characteristics, including sequencing batch
+psb |> dist_permanova(variables = c("arm", "bv", "ph", "any_sti", "rnaseq_batch"),
+                      n_perms = 999, seed = 202, by = "margin")
+```
+
+- **Check me:** change the seed to 456 and rerun the first PERMANOVA chunk.
+  The R² should stay around 3% and the p-value near 0.15. If the verdict flips
+  when the seed changes, it was never a solid verdict.
+
+# 2½. A PERMANOVA caveat: different places, or just more spread out?
+
+PERMANOVA can come out significant for a boring reason: one group being
+more *scattered* than the others, rather than sitting in a different place.
+`betadisper` (Anderson 2006,
+<https://doi.org/10.1139/E06-036>) tests exactly that — "do the groups
+differ in how spread out they are?" — and a large p-value here is good news:
+it means the PERMANOVA above is about *where* the groups sit, not how
+scattered they are. (The warning about "negative squared distances" that
+this chunk prints under the hood is expected — it comes from the PCoA step
+inside `betadisper` and does not affect the test.)
+
+```{r}
+# dist_get() pulls the distance matrix back out of psb.
+dist_b <- dist_get(psb)
+
+set.seed(202)
+vegan::permutest(vegan::betadisper(dist_b, d$metadata$bv),  permutations = 999)$tab
+
+set.seed(202)
+vegan::permutest(vegan::betadisper(dist_b, d$metadata$arm), permutations = 999)$tab
+```
+
+Neither is close to significant (BV: p ≈ 0.5; arm: p ≈ 0.8): the groups are
+equally spread out. So the BV signal above — the thing that actually
+structures these communities — is a genuine shift, not a scatter artefact.
+
+# 3. Which arms differ?
+
+An overall test of three groups can miss a difference that exists between
+only two of them, so we test the three pairs separately. Caveat: three tests
+means three chances to be fooled by chance. The last column applies a
+**Holm correction**, which pays that back — treat anything that only
+survives the uncorrected column as *suggestive*, not settled.
+
+```{r}
+pairs <- list(c("pill", "injectable"), c("pill", "ring"), c("injectable", "ring"))
+
+pairwise <- map_dfr(pairs, function(pr) {
+  # prune_samples() keeps only the listed samples. We find the IDs with an
+  # ordinary dplyr filter first, because subset_samples() would need to see
+  # `pr` from inside the sample table, where it can't look.
+  ids <- d$metadata$sample_id[d$metadata$arm %in% pr]
+  t <- as.data.frame(perm_get(
+    prune_samples(ids, ps) |>
+      tax_transform("compositional") |> dist_calc("bray") |>
+      dist_permanova(variables = "arm", n_perms = 999, seed = 202, verbose = FALSE)
+  ))
+  tibble(comparison = paste(pr[1], "vs", pr[2]),
+         r2 = round(t$R2[1], 3), p_value = t$`Pr(>F)`[1])
+})
+
+# p_holm: adjusted for having run three tests. Roughly, the smallest
+# p-value gets multiplied by 3, the next by 2, the last is left alone.
+pairwise |>
+  mutate(p_holm = round(p.adjust(p_value, "holm"), 3))
+```
+
+# 4. Worry: robustness
+
+Four checks: the same distance on raw counts, two other distances, and the
+15,000-read filter from section 0.
+
+- *Raw-count Bray-Curtis* is what we'd get if we forgot to convert to
+  proportions: shallow samples then look different just for being shallow.
+- *Aitchison* (CLR transform + Euclidean distance) treats the data as
+  compositional and works on log-ratios instead of raw proportions.
+- *Jaccard* ignores how abundant a species is — only whether it is there.
+- Dropping the nine low-depth samples asks whether shallow samples were
+  adding noise that drowned the signal.
+
+```{r}
+# A helper that runs the PERMANOVA for arm and returns just its R2 and p.
+test_arm <- function(ps_obj) {
+  t <- as.data.frame(perm_get(
+    ps_obj |> dist_permanova(variables = "arm", n_perms = 999, seed = 202, verbose = FALSE)
+  ))
+  tibble(r2 = round(t$R2[1], 3), p_value = t$`Pr(>F)`[1])
+}
+
+low_depth <- lib$sample_id[lib$reads < 15000]
+
+robust <- bind_rows(
+  `Bray (proportions)`       = test_arm(psb),
+  `Bray (raw counts)`        = test_arm(ps |> tax_transform("identity") |> dist_calc("bray")),
+  `Aitchison (clr + euc)`    = test_arm(ps |> tax_transform("clr", rank = "species") |> dist_calc("euclidean")),
+  `Jaccard`                   = test_arm(ps |> tax_transform("binary") |> dist_calc("jaccard")),
+  `Bray (prop.), low-depth dropped` = test_arm(
+    prune_samples(setdiff(d$metadata$sample_id, low_depth), ps) |>
+      tax_transform("compositional") |> dist_calc("bray")),
+  .id = "approach"
+)
+robust
+```
+
+# 5. A sanity check from the biology
+
+If the pill's communities really sit apart, a much simpler summary should
+show it too: the total share held by *Lactobacillus* species, the genus that
+dominates healthy vaginal communities.
+
+```{r}
+tax <- d$taxonomy
+lacto_rows <- tax$Genus == "Lactobacillus"
+lacto_share <- colSums(d$species[lacto_rows, ]) / colSums(d$species)
+
+d$metadata |>
+  mutate(lacto_share = lacto_share[sample_id]) |>
+  group_by(arm) |>
+  summarise(median_lacto_share = scales::percent(median(lacto_share), 0.1))
+```
+
+# Verdict
+
+The three methods' communities **overlap far more than they differ**. On the
+Bray-Curtis map, arm explains about **3%** of the differences between samples
+(p ≈ 0.15) — not significant on its own, and it stays at ~3% (p ≈ 0.11) once
+BV, pH, STI status and sequencing batch have had their share. What clearly
+*does* structure these communities is **BV status** (R² ≈ 14%, p ≈ 0.001),
+and BV is distributed fairly evenly across the three arms, so it is a rival
+explanation of the pattern we went looking for rather than a confounder of a
+real arm effect. The dispersion check in section 2½ confirms that the BV
+signal is a genuine shift, not an artefact of one group being more scattered.
+
+The pairwise tests point the same way as the sanity check: the **pill** group
+(median *Lactobacillus* share 85%, vs ~45% for the other two arms) separates
+from the **injectable** group (p ≈ 0.03, though ≈ 0.1 once the three
+comparisons are corrected for), while the ring sits between and
+differs from neither. Dropping the nine low-depth samples strengthened the
+overall arm signal (R² ≈ 6%, p ≈ 0.01) — the shallow samples were adding
+noise — which makes pill-vs-injectable more believable, but it is one
+comparison out of three and deserves the gene-table follow-up before we call
+it.
+
+**Bottom line for the group:** the overall answer is "not much", with one
+suggestive exception (pill vs injectable) worth chasing tomorrow with the
+gene table.
+
+## Choices made
+
+- Used **Bray-Curtis on relative abundances** (compositional transform) as
+  the main distance; alternatives run as robustness checks: Bray-Curtis on
+  raw counts, Aitchison (CLR + Euclidean) and Jaccard. (The original version
+  of this report used raw counts as the main distance, which the text
+  described as "relative abundances" — they are not the same thing, and
+  raw counts make shallow samples look artificially different.)
+- Tested with **PERMANOVA, 999 permutations, seed 202** for reproducibility;
+  an alternative is 9999 permutations, which only steadies the third decimal.
+- Used `by = "margin"` in the multi-variable model so each variable's R² does
+  not depend on listing order; the alternative (`by = "terms"`) was not used.
+- Included **sequencing batch** in the multi-variable model (it was
+  negligible, R² ≈ 0.5%); the alternative was to leave it out.
+- Defined **low depth as < 15,000 reads**, read off the gap in the library
+  size histogram, kept those samples in the main analysis and did a
+  **sensitivity analysis** without them; the alternative is to drop them
+  throughout, which moves the headline p-value from ~0.15 to ~0.01.
+- Reported **pairwise tests with a Holm correction** alongside the raw
+  p-values; the alternative (raw p-values only, yesterday's version) makes
+  pill-vs-injectable look stronger than it is: 0.03 raw, ≈ 0.10 corrected.
+- Checked **multivariate dispersion** (`betadisper`) so the PERMANOVA
+  results are not a spread artefact; the alternative was to trust PERMANOVA
+  alone, which can be significant purely because one group is more scattered.
+- Asked the question of the **species table only**; the same pipeline runs on
+  the gene table and is the next step.

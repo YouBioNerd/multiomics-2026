@@ -1,0 +1,144 @@
+---
+title: "Study B — is bacterial vaginosis more common in one arm?"
+format: html
+editor: source
+execute:
+  warning: false
+  message: false
+---
+
+**The question:** is BV more common in one contraceptive arm than the others?
+
+This matters for reading yesterday's report (`02-community-composition.qmd`):
+BV dominated the community ordination (R² ≈ 13%), so if BV *also* clustered
+in one arm, that arm would look compositionally different for a boring
+reason. Today we check the claim directly, with the habits from Tuesday's
+anatomy module: **look at the table before testing it**.
+
+```{r setup}
+library(tidyverse)
+library(here)
+
+source(here("R/count_tables.R"))
+
+dd <- read_counts("group_b")            # all six tables
+dd$metadata                             # one row per sample; dd$species = the count table
+md <- dd$metadata
+```
+
+# 1. Look: what does the `bv` column actually contain?
+
+The anatomy module's first lesson: check what a column holds before you
+trust it. `bv` has three levels; `nugent` is the numeric score (0–10) that
+BV categories are conventionally derived from: 0–3 negative, 4–6
+intermediate, 7–10 positive. If the two columns disagree, one of them is
+wrong and every downstream result inherits the error.
+
+```{r}
+table(bv = md$bv,
+      nugent_category = cut(md$nugent, c(-Inf, 3, 6, Inf),
+                            labels = c("nugent 0-3", "nugent 4-6", "nugent 7-10")))
+```
+
+Perfect agreement: every `negative` sits in 0–3, every `intermediate` in
+4–6, every `positive` in 7–10. Two sources, one story — the column is safe
+to use.
+
+# 2. Look: BV by arm
+
+```{r}
+# The contingency table: rows = arm, columns = BV category.
+# prop.table(..., 1) turns counts into row proportions (share within each arm).
+t3 <- table(md$arm, md$bv)
+t3
+round(prop.table(t3, 1), 3)
+```
+
+```{r}
+md |>
+  count(arm, bv) |>
+  ggplot(aes(arm, n, fill = bv)) +
+  geom_col(position = "fill") +
+  scale_y_continuous(labels = scales::percent) +
+  labs(x = NULL, y = "Share of samples", fill = "BV status",
+       title = "BV status by contraceptive arm")
+```
+
+- **Check me:** the counts must sum to 93 — `nrow(md)`. The injectable bar
+  should have no visible "intermediate" segment (it has zero).
+
+# 3. Test: is the pattern more than chance?
+
+Fisher's exact test asks: "if BV status were assigned at random, how often
+would a table this lopsided appear?" We prefer it to the chi-square test
+here because two cells hold fewer than 5 samples, which makes the
+chi-square approximation unreliable (R warns about this if you run it).
+
+```{r}
+fisher.test(t3)
+```
+
+And the simpler two-category version — any sign of BV (positive or
+intermediate) vs none — in case the three-way split is just too fine for 93
+samples:
+
+```{r}
+fisher.test(table(md$arm, bv_any = md$bv != "negative"))
+```
+
+- **Check me:** rerun with `chisq.test()` in place of `fisher.test()` — the
+  p-values are in the same ballpark (0.47 and 0.84), so the choice of test
+  is not driving the answer.
+
+# 4. A sanity check from the biology
+
+If the `bv` labels mean anything, samples labelled BV-positive should carry
+more *Gardnerella*, the genus most associated with bacterial vaginosis.
+
+```{r}
+tax  <- dd$taxonomy
+cnts <- dd$species
+gardnerella_share <- colSums(cnts[tax$Genus == "Gardnerella", ]) / colSums(cnts)
+
+md |>
+  mutate(gardnerella_share = gardnerella_share[sample_id]) |>
+  group_by(bv) |>
+  summarise(median_gardnerella = scales::percent(median(gardnerella_share), 0.1))
+```
+
+# Verdict
+
+**No.** BV prevalence is statistically indistinguishable across the three
+arms. Counting `intermediate` as BV: about **49%** in the injectable arm,
+**43%** in the pill, **42%** in the ring; counting `positive` only:
+49% / 36% / 38%. Fisher p ≈ 0.45 with three categories, p ≈ 0.90 with two —
+nowhere near significance, and with 26–39 participants per arm even the
+largest gap between arms (13 points, pill vs injectable, positive-only) is
+within what chance produces.
+
+This closes the loop opened in `02-community-composition.qmd`: BV
+overwhelmingly shapes these vaginal communities (R² ≈ 13%), but it is
+**evenly spread across arms**, so it is a rival explanation for any
+community pattern — not a confounder hiding inside one arm. The suggestive
+pill-vs-injectable difference from yesterday is therefore *not* explained by
+one arm simply having more BV.
+
+**Bottom line for the group:** BV is common (~43–49%) everywhere in Study B;
+no arm is protected or penalised. Any arm effect on composition has to work
+through something other than BV.
+
+## Choices made
+
+- Used **Fisher's exact test** as the main test because two cells had fewer
+  than 5 samples; the chi-square alternative gave the same verdict.
+- Ran the test **both ways**: three BV categories, and any-BV-vs-none
+  collapsed to two; the alternative was to pick one and hope.
+- Counted **`intermediate` as BV** in the two-category test (`bv != "negative"`);
+  the alternative (positive-only, `bv == "positive"`) gives p ≈ 0.56 — the
+  verdict does not change.
+- **Kept all 93 samples**, including the nine low-depth ones flagged in
+  `01-qc.qmd`: BV status comes from the Nugent score, not from sequencing
+  depth, so shallow samples are still valid rows in this table.
+- Validated the **`bv` column against `nugent`** before using it; the
+  alternative was to trust the label, which would have been fine here but
+  is a bad habit.

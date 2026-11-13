@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.11.9">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Study B — do the three contraceptive methods differ in community composition?</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="02-community-composition_files/libs/clipboard/clipboard.min.js"></script>
+<script src="02-community-composition_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="02-community-composition_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="02-community-composition_files/libs/quarto-html/scrollable-regions/scrollable-regions.js" type="module"></script>
+<script src="02-community-composition_files/libs/quarto-html/popper.min.js"></script>
+<script src="02-community-composition_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="02-community-composition_files/libs/quarto-html/anchor.min.js"></script>
+<link href="02-community-composition_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="02-community-composition_files/libs/quarto-html/quarto-syntax-highlighting-63b5708e65d6cd79cd7618c58d0c21e7.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="02-community-composition_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="02-community-composition_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="02-community-composition_files/libs/bootstrap/bootstrap-02590e3e38ac9d70b97f04e35c69a9e1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent quarto-light"><a id="quarto-skip-link" class="visually-hidden-focusable" href="#quarto-document-content">Skip to main content</a>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content" tabindex="-1">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Study B — do the three contraceptive methods differ in community composition?</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><strong>The question:</strong> do the vaginal communities of people on the pill, the injectable, and the ring differ from each other?</p>
+<p><strong>The plan</strong>, built on Tuesday’s ordination module:</p>
+<ol type="1">
+<li><strong>Look</strong> — draw a PCoA map of the samples, coloured by arm. A <em>PCoA</em> (principal coordinate analysis) turns the pairwise distances between samples into a 2-D map: points that are close together have similar communities. We use <em>Bray-Curtis</em> distance, computed on relative abundances: 0 means two samples share the same species proportions, 1 means nothing in common.</li>
+<li><strong>Test</strong> — PERMANOVA (Anderson 2001, <a href="https://doi.org/10.1111/j.1442-9993.2001.01070.pp.x" class="uri">https://doi.org/10.1111/j.1442-9993.2001.01070.pp.x</a>). In plain words: it asks “how much of the difference between samples is explained by arm, and is that more than we’d see if we shuffled the arm labels at random?” The <em>R²</em> is the “how much” (like R² in a regression); the <em>p-value</em> comes from comparing it against 999 shuffles of the labels.</li>
+<li><strong>Worry</strong> — check that the answer survives different distances, a stricter low-depth filter, and the fact that BV status (which dominates these communities) is tangled up with arm.</li>
+</ol>
+<p>Study B has one sample per participant, so there are no repeat visits to worry about.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(microViz)     <span class="co"># the pipeline: tax_transform |&gt; dist_calc |&gt; ord_calc |&gt; ord_plot</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(phyloseq)     <span class="co"># prune_samples() and friends come from here</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)    <span class="co"># lets us put two ggplots side by side with p1 + p2</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"R/count_tables.R"</span>))</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>d  <span class="ot">&lt;-</span> <span class="fu">read_counts</span>(<span class="st">"group_b"</span>)                        <span class="co"># plain tables (metadata, species counts, …)</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>ps <span class="ot">&lt;-</span> <span class="fu">as_counts</span>(<span class="st">"group_b"</span>, <span class="st">"microbiome"</span>, <span class="at">data =</span> d)  <span class="co"># same data as a phyloseq object for microViz</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co"># The working object for most of the report: Bray-Curtis distance on</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co"># RELATIVE abundances. "compositional" turns each sample's counts into</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co"># shares of that sample's total first, so the distance compares proportions.</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co"># (On raw counts, a shallow sample looks different just for being shallow,</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="co"># and we have nine shallow samples — see section 0.)</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>psb <span class="ot">&lt;-</span> ps <span class="sc">|&gt;</span> <span class="fu">tax_transform</span>(<span class="st">"compositional"</span>) <span class="sc">|&gt;</span> <span class="fu">dist_calc</span>(<span class="st">"bray"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<section id="a-look-at-depth-first" class="level1">
+<h1>0. A look at depth first</h1>
+<p>Bray-Curtis uses <em>proportions</em>, so shallow samples are noisier: with few reads, the proportions are estimated badly. Before anything else, where do the library sizes sit?</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>lib <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">sample_id =</span> d<span class="sc">$</span>metadata<span class="sc">$</span>sample_id,</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>              <span class="at">arm       =</span> d<span class="sc">$</span>metadata<span class="sc">$</span>arm,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">reads     =</span> <span class="fu">colSums</span>(d<span class="sc">$</span>species))</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(lib, <span class="fu">aes</span>(reads)) <span class="sc">+</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">30</span>, <span class="at">fill =</span> <span class="st">"grey70"</span>, <span class="at">colour =</span> <span class="st">"white"</span>) <span class="sc">+</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Reads per sample (species table)"</span>, <span class="at">y =</span> <span class="st">"Samples"</span>,</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Library sizes: a clear gap below ~15,000 reads"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02-community-composition_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>There is a natural break in the histogram: nine samples sit at 14,500 reads or below and the next one up is at 15,200. I take anything below 15,000 as “low depth” and keep it in mind for the robustness checks later. I do <strong>not</strong> drop these samples from the main analysis — a rule picked by looking at the outcome of the test would be a rule picked to get an answer.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># which samples the 15,000 rule catches</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>lib <span class="sc">|&gt;</span> <span class="fu">filter</span>(reads <span class="sc">&lt;</span> <span class="dv">15000</span>) <span class="sc">|&gt;</span> <span class="fu">arrange</span>(reads)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 9 × 3
+  sample_id arm        reads
+  &lt;chr&gt;     &lt;chr&gt;      &lt;dbl&gt;
+1 B006      ring        5247
+2 B083      ring       10756
+3 B065      injectable 11570
+4 B024      injectable 11627
+5 B069      ring       12927
+6 B070      injectable 13333
+7 B091      pill       13543
+8 B003      injectable 14057
+9 B076      injectable 14534</code></pre>
+</div>
+</div>
+<ul>
+<li><strong>Check me:</strong> rerun the histogram chunk; the bar of small samples at the left edge should hold <code>nrow(filter(lib, reads &lt; 15000))</code> = 9 samples.</li>
+</ul>
+</section>
+<section id="look-the-ordination" class="level1">
+<h1>1. Look: the ordination</h1>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ord_calc("PCoA") builds the map; ord_plot() draws it.</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># The axis titles show how much of the total variation each axis carries.</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>psb <span class="sc">|&gt;</span> <span class="fu">ord_calc</span>(<span class="st">"PCoA"</span>) <span class="sc">|&gt;</span> <span class="fu">ord_plot</span>(<span class="at">colour =</span> <span class="st">"arm"</span>) <span class="sc">+</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Bray-Curtis PCoA, coloured by contraceptive method"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02-community-composition_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<ul>
+<li><strong>Check me:</strong> the plot should have 93 points — <code>nrow(d$metadata)</code>. Rerunning the chunk gives exactly the same map: PCoA is deterministic.</li>
+<li>Do the three colours separate into three islands, or overlap? <em>Your answer:</em></li>
+</ul>
+<p>The same points coloured by things that might explain more than arm:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> psb <span class="sc">|&gt;</span> <span class="fu">ord_calc</span>(<span class="st">"PCoA"</span>) <span class="sc">|&gt;</span> <span class="fu">ord_plot</span>(<span class="at">colour =</span> <span class="st">"bv"</span>) <span class="sc">+</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"… coloured by BV status"</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> psb <span class="sc">|&gt;</span> <span class="fu">ord_calc</span>(<span class="st">"PCoA"</span>) <span class="sc">|&gt;</span> <span class="fu">ord_plot</span>(<span class="at">colour =</span> <span class="st">"ph"</span>) <span class="sc">+</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"… coloured by pH"</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>p1 <span class="sc">+</span> p2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="02-community-composition_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="test-permanova" class="level1">
+<h1>2. Test: PERMANOVA</h1>
+<p>Arm on its own, then arm alongside the other sample characteristics. <code>by = "margin"</code> means each variable’s R² is what is left after the others have had their share — without it, the result would depend on the order the variables are listed in. Seed 202 fixes the shuffle order so the numbers are reproducible.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># arm alone</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>psb <span class="sc">|&gt;</span> <span class="fu">dist_permanova</span>(<span class="at">variables =</span> <span class="st">"arm"</span>, <span class="at">n_perms =</span> <span class="dv">999</span>, <span class="at">seed =</span> <span class="dv">202</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>psExtra object - a phyloseq object with extra slots:
+
+phyloseq-class experiment-level object
+otu_table()   OTU Table:         [ 220 taxa and 93 samples ]
+sample_data() Sample Data:       [ 93 samples by 8 sample variables ]
+tax_table()   Taxonomy Table:    [ 220 taxa by 8 taxonomic ranks ]
+
+otu_get(counts = TRUE)       [ 220 taxa and 93 samples ]
+
+psExtra info:
+tax_agg = "unique" tax_trans = "compositional" 
+
+bray distance matrix of size 93 
+0.6550832 0.7350117 0.2355842 0.8155489 0.90071 ...
+
+permanova:
+Permutation test for adonis under reduced model
+Marginal effects of terms
+Permutation: free
+Number of permutations: 999
+
+vegan::adonis2(formula = formula, data = metadata, permutations = n_perms, by = by, parallel = parall)
+         Df SumOfSqs      R2      F Pr(&gt;F)
+arm       2   0.9504 0.03261 1.5171  0.147
+Residual 90  28.1894 0.96739              
+Total    92  29.1398 1.00000              </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># arm together with the other characteristics, including sequencing batch</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>psb <span class="sc">|&gt;</span> <span class="fu">dist_permanova</span>(<span class="at">variables =</span> <span class="fu">c</span>(<span class="st">"arm"</span>, <span class="st">"bv"</span>, <span class="st">"ph"</span>, <span class="st">"any_sti"</span>, <span class="st">"rnaseq_batch"</span>),</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>                      <span class="at">n_perms =</span> <span class="dv">999</span>, <span class="at">seed =</span> <span class="dv">202</span>, <span class="at">by =</span> <span class="st">"margin"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>psExtra object - a phyloseq object with extra slots:
+
+phyloseq-class experiment-level object
+otu_table()   OTU Table:         [ 220 taxa and 93 samples ]
+sample_data() Sample Data:       [ 93 samples by 8 sample variables ]
+tax_table()   Taxonomy Table:    [ 220 taxa by 8 taxonomic ranks ]
+
+otu_get(counts = TRUE)       [ 220 taxa and 93 samples ]
+
+psExtra info:
+tax_agg = "unique" tax_trans = "compositional" 
+
+bray distance matrix of size 93 
+0.6550832 0.7350117 0.2355842 0.8155489 0.90071 ...
+
+permanova:
+Permutation test for adonis under reduced model
+Marginal effects of terms
+Permutation: free
+Number of permutations: 999
+
+vegan::adonis2(formula = formula, data = metadata, permutations = n_perms, by = by, parallel = parall)
+             Df SumOfSqs      R2      F Pr(&gt;F)    
+arm           2   0.7887 0.02706 1.6720  0.108    
+bv            2   4.1794 0.14343 8.8607  0.001 ***
+ph            1   0.3207 0.01101 1.3600  0.223    
+any_sti       1   0.2143 0.00735 0.9087  0.442    
+rnaseq_batch  1   0.1640 0.00563 0.6953  0.606    
+Residual     85  20.0463 0.68793                  
+Total        92  29.1398 1.00000                  
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+<ul>
+<li><strong>Check me:</strong> change the seed to 456 and rerun the first PERMANOVA chunk. The R² should stay around 3% and the p-value near 0.15. If the verdict flips when the seed changes, it was never a solid verdict.</li>
+</ul>
+</section>
+<section id="a-permanova-caveat-different-places-or-just-more-spread-out" class="level1">
+<h1>2½. A PERMANOVA caveat: different places, or just more spread out?</h1>
+<p>PERMANOVA can come out significant for a boring reason: one group being more <em>scattered</em> than the others, rather than sitting in a different place. <code>betadisper</code> (Anderson 2006, <a href="https://doi.org/10.1139/E06-036" class="uri">https://doi.org/10.1139/E06-036</a>) tests exactly that — “do the groups differ in how spread out they are?” — and a large p-value here is good news: it means the PERMANOVA above is about <em>where</em> the groups sit, not how scattered they are. (The warning about “negative squared distances” that this chunk prints under the hood is expected — it comes from the PCoA step inside <code>betadisper</code> and does not affect the test.)</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># dist_get() pulls the distance matrix back out of psb.</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>dist_b <span class="ot">&lt;-</span> <span class="fu">dist_get</span>(psb)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">202</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>vegan<span class="sc">::</span><span class="fu">permutest</span>(vegan<span class="sc">::</span><span class="fu">betadisper</span>(dist_b, d<span class="sc">$</span>metadata<span class="sc">$</span>bv),  <span class="at">permutations =</span> <span class="dv">999</span>)<span class="sc">$</span>tab</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          Df     Sum Sq    Mean Sq         F N.Perm Pr(&gt;F)
+Groups     2 0.03313067 0.01656534 0.6578619    999  0.517
+Residuals 90 2.26625113 0.02518057        NA     NA     NA</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">202</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>vegan<span class="sc">::</span><span class="fu">permutest</span>(vegan<span class="sc">::</span><span class="fu">betadisper</span>(dist_b, d<span class="sc">$</span>metadata<span class="sc">$</span>arm), <span class="at">permutations =</span> <span class="dv">999</span>)<span class="sc">$</span>tab</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          Df      Sum Sq     Mean Sq         F N.Perm Pr(&gt;F)
+Groups     2 0.008211798 0.004105899 0.2425162    999  0.777
+Residuals 90 1.523736784 0.016930409        NA     NA     NA</code></pre>
+</div>
+</div>
+<p>Neither is close to significant (BV: p ≈ 0.5; arm: p ≈ 0.8): the groups are equally spread out. So the BV signal above — the thing that actually structures these communities — is a genuine shift, not a scatter artefact.</p>
+</section>
+<section id="which-arms-differ" class="level1">
+<h1>3. Which arms differ?</h1>
+<p>An overall test of three groups can miss a difference that exists between only two of them, so we test the three pairs separately. Caveat: three tests means three chances to be fooled by chance. The last column applies a <strong>Holm correction</strong>, which pays that back — treat anything that only survives the uncorrected column as <em>suggestive</em>, not settled.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>pairs <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"pill"</span>, <span class="st">"injectable"</span>), <span class="fu">c</span>(<span class="st">"pill"</span>, <span class="st">"ring"</span>), <span class="fu">c</span>(<span class="st">"injectable"</span>, <span class="st">"ring"</span>))</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>pairwise <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(pairs, <span class="cf">function</span>(pr) {</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># prune_samples() keeps only the listed samples. We find the IDs with an</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ordinary dplyr filter first, because subset_samples() would need to see</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># `pr` from inside the sample table, where it can't look.</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  ids <span class="ot">&lt;-</span> d<span class="sc">$</span>metadata<span class="sc">$</span>sample_id[d<span class="sc">$</span>metadata<span class="sc">$</span>arm <span class="sc">%in%</span> pr]</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  t <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">perm_get</span>(</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">prune_samples</span>(ids, ps) <span class="sc">|&gt;</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>      <span class="fu">tax_transform</span>(<span class="st">"compositional"</span>) <span class="sc">|&gt;</span> <span class="fu">dist_calc</span>(<span class="st">"bray"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">dist_permanova</span>(<span class="at">variables =</span> <span class="st">"arm"</span>, <span class="at">n_perms =</span> <span class="dv">999</span>, <span class="at">seed =</span> <span class="dv">202</span>, <span class="at">verbose =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(<span class="at">comparison =</span> <span class="fu">paste</span>(pr[<span class="dv">1</span>], <span class="st">"vs"</span>, pr[<span class="dv">2</span>]),</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>         <span class="at">r2 =</span> <span class="fu">round</span>(t<span class="sc">$</span>R2[<span class="dv">1</span>], <span class="dv">3</span>), <span class="at">p_value =</span> t<span class="sc">$</span><span class="st">`</span><span class="at">Pr(&gt;F)</span><span class="st">`</span>[<span class="dv">1</span>])</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a><span class="co"># p_holm: adjusted for having run three tests. Roughly, the smallest</span></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a><span class="co"># p-value gets multiplied by 3, the next by 2, the last is left alone.</span></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>pairwise <span class="sc">|&gt;</span></span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p_holm =</span> <span class="fu">round</span>(<span class="fu">p.adjust</span>(p_value, <span class="st">"holm"</span>), <span class="dv">3</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 4
+  comparison            r2 p_value p_holm
+  &lt;chr&gt;              &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;
+1 pill vs injectable 0.039   0.033  0.099
+2 pill vs ring       0.013   0.602  0.65 
+3 injectable vs ring 0.017   0.325  0.65 </code></pre>
+</div>
+</div>
+</section>
+<section id="worry-robustness" class="level1">
+<h1>4. Worry: robustness</h1>
+<p>Four checks: the same distance on raw counts, two other distances, and the 15,000-read filter from section 0.</p>
+<ul>
+<li><em>Raw-count Bray-Curtis</em> is what we’d get if we forgot to convert to proportions: shallow samples then look different just for being shallow.</li>
+<li><em>Aitchison</em> (CLR transform + Euclidean distance) treats the data as compositional and works on log-ratios instead of raw proportions.</li>
+<li><em>Jaccard</em> ignores how abundant a species is — only whether it is there.</li>
+<li>Dropping the nine low-depth samples asks whether shallow samples were adding noise that drowned the signal.</li>
+</ul>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># A helper that runs the PERMANOVA for arm and returns just its R2 and p.</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>test_arm <span class="ot">&lt;-</span> <span class="cf">function</span>(ps_obj) {</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  t <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">perm_get</span>(</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    ps_obj <span class="sc">|&gt;</span> <span class="fu">dist_permanova</span>(<span class="at">variables =</span> <span class="st">"arm"</span>, <span class="at">n_perms =</span> <span class="dv">999</span>, <span class="at">seed =</span> <span class="dv">202</span>, <span class="at">verbose =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(<span class="at">r2 =</span> <span class="fu">round</span>(t<span class="sc">$</span>R2[<span class="dv">1</span>], <span class="dv">3</span>), <span class="at">p_value =</span> t<span class="sc">$</span><span class="st">`</span><span class="at">Pr(&gt;F)</span><span class="st">`</span>[<span class="dv">1</span>])</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>low_depth <span class="ot">&lt;-</span> lib<span class="sc">$</span>sample_id[lib<span class="sc">$</span>reads <span class="sc">&lt;</span> <span class="dv">15000</span>]</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>robust <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">Bray (proportions)</span><span class="st">`</span>       <span class="ot">=</span> <span class="fu">test_arm</span>(psb),</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">Bray (raw counts)</span><span class="st">`</span>        <span class="ot">=</span> <span class="fu">test_arm</span>(ps <span class="sc">|&gt;</span> <span class="fu">tax_transform</span>(<span class="st">"identity"</span>) <span class="sc">|&gt;</span> <span class="fu">dist_calc</span>(<span class="st">"bray"</span>)),</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">Aitchison (clr + euc)</span><span class="st">`</span>    <span class="ot">=</span> <span class="fu">test_arm</span>(ps <span class="sc">|&gt;</span> <span class="fu">tax_transform</span>(<span class="st">"clr"</span>, <span class="at">rank =</span> <span class="st">"species"</span>) <span class="sc">|&gt;</span> <span class="fu">dist_calc</span>(<span class="st">"euclidean"</span>)),</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">Jaccard</span><span class="st">`</span>                   <span class="ot">=</span> <span class="fu">test_arm</span>(ps <span class="sc">|&gt;</span> <span class="fu">tax_transform</span>(<span class="st">"binary"</span>) <span class="sc">|&gt;</span> <span class="fu">dist_calc</span>(<span class="st">"jaccard"</span>)),</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">Bray (prop.), low-depth dropped</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">test_arm</span>(</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">prune_samples</span>(<span class="fu">setdiff</span>(d<span class="sc">$</span>metadata<span class="sc">$</span>sample_id, low_depth), ps) <span class="sc">|&gt;</span></span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>      <span class="fu">tax_transform</span>(<span class="st">"compositional"</span>) <span class="sc">|&gt;</span> <span class="fu">dist_calc</span>(<span class="st">"bray"</span>)),</span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">.id =</span> <span class="st">"approach"</span></span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>robust</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 3
+  approach                           r2 p_value
+  &lt;chr&gt;                           &lt;dbl&gt;   &lt;dbl&gt;
+1 Bray (proportions)              0.033   0.147
+2 Bray (raw counts)               0.033   0.105
+3 Aitchison (clr + euc)           0.028   0.18 
+4 Jaccard                         0.026   0.19 
+5 Bray (prop.), low-depth dropped 0.057   0.011</code></pre>
+</div>
+</div>
+</section>
+<section id="a-sanity-check-from-the-biology" class="level1">
+<h1>5. A sanity check from the biology</h1>
+<p>If the pill’s communities really sit apart, a much simpler summary should show it too: the total share held by <em>Lactobacillus</em> species, the genus that dominates healthy vaginal communities.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>tax <span class="ot">&lt;-</span> d<span class="sc">$</span>taxonomy</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>lacto_rows <span class="ot">&lt;-</span> tax<span class="sc">$</span>Genus <span class="sc">==</span> <span class="st">"Lactobacillus"</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>lacto_share <span class="ot">&lt;-</span> <span class="fu">colSums</span>(d<span class="sc">$</span>species[lacto_rows, ]) <span class="sc">/</span> <span class="fu">colSums</span>(d<span class="sc">$</span>species)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>d<span class="sc">$</span>metadata <span class="sc">|&gt;</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">lacto_share =</span> lacto_share[sample_id]) <span class="sc">|&gt;</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(arm) <span class="sc">|&gt;</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">median_lacto_share =</span> scales<span class="sc">::</span><span class="fu">percent</span>(<span class="fu">median</span>(lacto_share), <span class="fl">0.1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 2
+  arm        median_lacto_share
+  &lt;chr&gt;      &lt;chr&gt;             
+1 injectable 45.3%             
+2 pill       84.8%             
+3 ring       44.7%             </code></pre>
+</div>
+</div>
+</section>
+<section id="verdict" class="level1">
+<h1>Verdict</h1>
+<p>The three methods’ communities <strong>overlap far more than they differ</strong>. On the Bray-Curtis map, arm explains about <strong>3%</strong> of the differences between samples (p ≈ 0.15) — not significant on its own, and it stays at ~3% (p ≈ 0.11) once BV, pH, STI status and sequencing batch have had their share. What clearly <em>does</em> structure these communities is <strong>BV status</strong> (R² ≈ 14%, p ≈ 0.001), and BV is distributed fairly evenly across the three arms, so it is a rival explanation of the pattern we went looking for rather than a confounder of a real arm effect. The dispersion check in section 2½ confirms that the BV signal is a genuine shift, not an artefact of one group being more scattered.</p>
+<p>The pairwise tests point the same way as the sanity check: the <strong>pill</strong> group (median <em>Lactobacillus</em> share 85%, vs ~45% for the other two arms) separates from the <strong>injectable</strong> group (p ≈ 0.03, though ≈ 0.1 once the three comparisons are corrected for), while the ring sits between and differs from neither. Dropping the nine low-depth samples strengthened the overall arm signal (R² ≈ 6%, p ≈ 0.01) — the shallow samples were adding noise — which makes pill-vs-injectable more believable, but it is one comparison out of three and deserves the gene-table follow-up before we call it.</p>
+<p><strong>Bottom line for the group:</strong> the overall answer is “not much”, with one suggestive exception (pill vs injectable) worth chasing tomorrow with the gene table.</p>
+<section id="choices-made" class="level2">
+<h2 class="anchored" data-anchor-id="choices-made">Choices made</h2>
+<ul>
+<li>Used <strong>Bray-Curtis on relative abundances</strong> (compositional transform) as the main distance; alternatives run as robustness checks: Bray-Curtis on raw counts, Aitchison (CLR + Euclidean) and Jaccard. (The original version of this report used raw counts as the main distance, which the text described as “relative abundances” — they are not the same thing, and raw counts make shallow samples look artificially different.)</li>
+<li>Tested with <strong>PERMANOVA, 999 permutations, seed 202</strong> for reproducibility; an alternative is 9999 permutations, which only steadies the third decimal.</li>
+<li>Used <code>by = "margin"</code> in the multi-variable model so each variable’s R² does not depend on listing order; the alternative (<code>by = "terms"</code>) was not used.</li>
+<li>Included <strong>sequencing batch</strong> in the multi-variable model (it was negligible, R² ≈ 0.5%); the alternative was to leave it out.</li>
+<li>Defined <strong>low depth as &lt; 15,000 reads</strong>, read off the gap in the library size histogram, kept those samples in the main analysis and did a <strong>sensitivity analysis</strong> without them; the alternative is to drop them throughout, which moves the headline p-value from ~0.15 to ~0.01.</li>
+<li>Reported <strong>pairwise tests with a Holm correction</strong> alongside the raw p-values; the alternative (raw p-values only, yesterday’s version) makes pill-vs-injectable look stronger than it is: 0.03 raw, ≈ 0.10 corrected.</li>
+<li>Checked <strong>multivariate dispersion</strong> (<code>betadisper</code>) so the PERMANOVA results are not a spread artefact; the alternative was to trust PERMANOVA alone, which can be significant purely because one group is more scattered.</li>
+<li>Asked the question of the <strong>species table only</strong>; the same pipeline runs on the gene table and is the next step.</li>
+</ul>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+      window.quartoDecorateExternalLinks = function (root) {
+     var links = (root || window.document).querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+          if (!link.classList.contains('no-external-icon')) {
+          }
+        }
+      }
+      };
+      window.quartoDecorateExternalLinks(window.document);
+    // Esc closes the popup (WCAG 1.4.13) and focus leaving both trigger and
+    // popup closes it (WCAG 2.4.11); tippy handles neither for interactive popups.
+    const hideOnEscAndFocusOut = {
+      name: 'hideOnEscAndFocusOut',
+      defaultValue: true,
+      fn(instance) {
+        const dismiss = () => {
+          // A show scheduled by the trigger delay would otherwise reopen it
+          instance.clearDelayTimeouts();
+          instance.hide();
+        };
+        const onKeyDown = (event) => {
+          if (event.key !== 'Escape') {
+            return;
+          }
+          // Keep Esc from also reaching page handlers (e.g. reveal.js overview),
+          // except an open reveal.js slide menu, which Esc should close too.
+          // The menu handles keys only when its keyboard option is on.
+          const menuHandlesEsc = window.Reveal?.getPlugin?.('menu')?.isOpen() &&
+            window.Reveal.getConfig().menu?.keyboard !== false;
+          if (!menuHandlesEsc) {
+            event.stopPropagation();
+          }
+          if (instance.popper.contains(window.document.activeElement)) {
+            // Disabled while refocusing so the focus trigger does not reopen it
+            instance.disable();
+            instance.reference.focus();
+            instance.enable();
+          }
+          dismiss();
+        };
+        const onFocusOut = (event) => {
+          const target = event.relatedTarget;
+          if (target && !instance.reference.contains(target) &&
+              !instance.popper.contains(target)) {
+            dismiss();
+          }
+        };
+        // On the trigger too: a click trigger (code-annotations: select) has no
+        // blur handling. Attached for the instance's lifetime so leaving the
+        // trigger also cancels a show still pending on the trigger delay.
+        instance.reference.addEventListener('focusout', onFocusOut);
+        return {
+          onShow() {
+            window.document.addEventListener('keydown', onKeyDown, true);
+            instance.popper.addEventListener('focusout', onFocusOut);
+          },
+          onHide() {
+            window.document.removeEventListener('keydown', onKeyDown, true);
+            instance.popper.removeEventListener('focusout', onFocusOut);
+          },
+          onDestroy() {
+            instance.reference.removeEventListener('focusout', onFocusOut);
+          },
+        };
+      },
+    };
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+        plugins: [hideOnEscAndFocusOut],
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          // Each band is positioned against its own containing block, which is
+          // not the offsetParent of the lines, so place it from client rects.
+          const placeBand = (band, firstEl, lastEl, codeBlock) => {
+            const container = band.offsetParent;
+            if (container === null) {
+              return;
+            }
+            const containerRect = container.getBoundingClientRect();
+            // Reveal.js scales slides with a transform, so convert client
+            // pixels back to the CSS pixels of the container.
+            const scale = containerRect.height / container.offsetHeight || 1;
+            const firstRect = firstEl.getBoundingClientRect();
+            const lastRect = lastEl.getBoundingClientRect();
+            const top = (firstRect.top - containerRect.top) / scale - container.clientTop + container.scrollTop;
+            const height = (lastRect.bottom - firstRect.top) / scale;
+            band.style.top = top - 2 + "px";
+            band.style.height = height + 4 + "px";
+            if (codeBlock) {
+              // Without the copy button wrapper, the containing block is wider
+              // than the code block, so span the code block explicitly.
+              const blockRect = codeBlock.getBoundingClientRect();
+              band.style.left = (blockRect.left - containerRect.left) / scale - container.clientLeft + container.scrollLeft + "px";
+              band.style.width = blockRect.width / scale + "px";
+            }
+          };
+          if (lineIds.length > 0) {
+            const el = window.document.getElementById(lineIds[0]);
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const parent = el.parentElement.parentElement;
+            // cook up a div (if necessary) and position it
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            placeBand(div, el, lastEl, parent.closest("div.sourceCode") || parent);
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            placeBand(gutterDiv, el, lastEl);
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+  <script type="application/javascript">
+  window.quartoScrollableRegionsLabels = {"code":"Scrollable code","output":"Scrollable output"};
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.11.9">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Module 2 — Count Table Anatomy</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="02-count-table-anatomy_files/libs/clipboard/clipboard.min.js"></script>
+<script src="02-count-table-anatomy_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="02-count-table-anatomy_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="02-count-table-anatomy_files/libs/quarto-html/scrollable-regions/scrollable-regions.js" type="module"></script>
+<script src="02-count-table-anatomy_files/libs/quarto-html/popper.min.js"></script>
+<script src="02-count-table-anatomy_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="02-count-table-anatomy_files/libs/quarto-html/anchor.min.js"></script>
+<link href="02-count-table-anatomy_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="02-count-table-anatomy_files/libs/quarto-html/quarto-syntax-highlighting-63b5708e65d6cd79cd7618c58d0c21e7.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="02-count-table-anatomy_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="02-count-table-anatomy_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="02-count-table-anatomy_files/libs/bootstrap/bootstrap-02590e3e38ac9d70b97f04e35c69a9e1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent quarto-light"><a id="quarto-skip-link" class="visually-hidden-focusable" href="#quarto-document-content">Skip to main content</a>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content" tabindex="-1">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Module 2 — Count Table Anatomy</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<blockquote class="blockquote">
+<p>In this module Pi writes the code. Your job is to ask for numbers and plots, look at each one, and decide what they mean. Ask Pi to put its code under the step you are working on. Every step ends with something for you to check or decide: write your answers here.</p>
+</blockquote>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>data_dir <span class="ot">&lt;-</span> <span class="st">"data/2-workshop2/instructional_dataset"</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>metadata <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="fu">here</span>(data_dir, <span class="st">"01_metadata.csv"</span>))</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>species  <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="fu">here</span>(data_dir, <span class="st">"02_microbiome_counts.csv"</span>))    <span class="co"># 220 species  x 471 samples</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>genes    <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="fu">here</span>(data_dir, <span class="st">"04_rnaseq_counts.csv.gz"</span>))     <span class="co"># 14,226 genes x 471 samples</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>taxonomy <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="fu">here</span>(data_dir, <span class="st">"03_microbiome_taxonomy.csv"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>metadata</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 471 × 11
+   sample_id    participant_id time_point outcome   age    ph nugent amine_test
+   &lt;chr&gt;        &lt;chr&gt;          &lt;chr&gt;      &lt;chr&gt;   &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;     
+ 1 P001_week_18 P001           week_18    term       25   4        7 Negative  
+ 2 P001_week_24 P001           week_24    term       25   5.8      9 Positive  
+ 3 P001_week_34 P001           week_34    term       25   5.8      8 Positive  
+ 4 P002_week_18 P002           week_18    term       30   4.5     NA Negative  
+ 5 P002_week_24 P002           week_24    term       30   4.5      2 Negative  
+ 6 P002_week_34 P002           week_34    term       30   4.5      0 Negative  
+ 7 P003_week_18 P003           week_18    term       42   3.5     NA Negative  
+ 8 P003_week_24 P003           week_24    term       42   4.5      0 Negative  
+ 9 P003_week_34 P003           week_34    term       42   4        4 Negative  
+10 P004_week_18 P004           week_18    term       40   4        4 Negative  
+# ℹ 461 more rows
+# ℹ 3 more variables: clue_cells &lt;dbl&gt;, discharge &lt;chr&gt;, rnaseq_batch &lt;chr&gt;</code></pre>
+</div>
+</div>
+<section id="exercise-1-many-looks-at-the-same-two-tables" class="level1">
+<h1>Exercise 1: Many looks at the same two tables</h1>
+<section id="part-1-predict-no-code" class="level2">
+<h2 class="anchored" data-anchor-id="part-1-predict-no-code">Part 1 — Predict (no code)</h2>
+<p>Answer before running anything below.</p>
+<p><strong>1. Of the 220 species, how many will you see in a single sample?</strong></p>
+<ul>
+<li>10</li>
+</ul>
+<p><strong>2. Of the 14,226 genes, how many will you see in a single sample?</strong></p>
+<ul>
+<li>several thousands</li>
+</ul>
+<p><strong>3. Which table has a larger share of zero cells?</strong></p>
+<ul>
+<li>species table</li>
+</ul>
+<p><strong>4. One sample has 438 bacterial reads against a median of about 28,700. What will be wrong with it?</strong></p>
+<ul>
+<li>low sequencing depth</li>
+</ul>
+<p><strong>5. A typical sample behaves like how many equally common species? Like how many equally expressed genes?</strong></p>
+<ul>
+<li>3 species, 1000 genes</li>
+</ul>
+</section>
+<section id="part-2-ask-look-decide" class="level2">
+<h2 class="anchored" data-anchor-id="part-2-ask-look-decide">Part 2 — Ask, look, decide</h2>
+<section id="step-1-the-per-sample-numbers" class="level3">
+<h3 class="anchored" data-anchor-id="step-1-the-per-sample-numbers">Step 1: the per-sample numbers</h3>
+<p>Suggested request: <em>In step 1 of my notebook, make one data frame with a row for every sample in each count table, species and genes, and a <code>table</code> column saying which. Columns: library size, number of features detected, fraction of zeros, the share held by the largest feature, Shannon diversity, and the effective number of features.</em></p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># One row per sample, for both count tables.</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Count tables are features in rows, samples in columns, so everything</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># here is computed column-wise (one column = one sample).</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>per_sample <span class="ot">&lt;-</span> <span class="cf">function</span>(counts, table_name) {</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  counts <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(counts[<span class="sc">-</span><span class="dv">1</span>])           <span class="co"># drop the feature-id column, keep the 471 sample columns</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  lib    <span class="ot">&lt;-</span> <span class="fu">colSums</span>(counts)                 <span class="co"># library size: total counts in the sample</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  p      <span class="ot">&lt;-</span> <span class="fu">sweep</span>(counts, <span class="dv">2</span>, lib, <span class="st">"/"</span>)      <span class="co"># each cell as a share of its sample's library size</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  p[p <span class="sc">==</span> <span class="dv">0</span>] <span class="ot">&lt;-</span> <span class="cn">NA</span>                           <span class="co"># log2(0) is undefined; its contribution is 0, so drop it</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  shannon <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fu">colSums</span>(p <span class="sc">*</span> <span class="fu">log2</span>(p), <span class="at">na.rm =</span> <span class="cn">TRUE</span>)  <span class="co"># Shannon diversity, log base 2</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">table             =</span> table_name,</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">sample            =</span> <span class="fu">names</span>(lib),</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">library_size      =</span> lib,</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">features_detected =</span> <span class="fu">colSums</span>(counts <span class="sc">&gt;</span> <span class="dv">0</span>),        <span class="co"># nonzero cells</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">fraction_zeros    =</span> <span class="dv">1</span> <span class="sc">-</span> <span class="fu">colMeans</span>(counts <span class="sc">&gt;</span> <span class="dv">0</span>),   <span class="co"># share of all cells that are zero</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">max_feature_share =</span> <span class="fu">apply</span>(counts, <span class="dv">2</span>, max) <span class="sc">/</span> lib, <span class="co"># biggest single feature's cut</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">shannon           =</span> shannon,</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">effective_features =</span> <span class="dv">2</span><span class="sc">^</span>shannon                   <span class="co"># how many equally common features it behaves like</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>sample_summary <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">per_sample</span>(species, <span class="st">"species"</span>),</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">per_sample</span>(genes,   <span class="st">"genes"</span>)</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>sample_summary</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 942 × 8
+   table  sample library_size features_detected fraction_zeros max_feature_share
+   &lt;chr&gt;  &lt;chr&gt;         &lt;dbl&gt;             &lt;dbl&gt;          &lt;dbl&gt;             &lt;dbl&gt;
+ 1 speci… P001_…        22756                23          0.895             0.807
+ 2 speci… P001_…        45106                57          0.741             0.399
+ 3 speci… P001_…        33121                37          0.832             0.312
+ 4 speci… P002_…         2530                21          0.905             0.415
+ 5 speci… P002_…        31714                 5          0.977             0.996
+ 6 speci… P002_…        66703                19          0.914             0.994
+ 7 speci… P003_…        32058                28          0.873             0.862
+ 8 speci… P003_…        27050                10          0.955             0.689
+ 9 speci… P003_…        24653                 9          0.959             0.773
+10 speci… P004_…        10197                27          0.877             0.533
+# ℹ 932 more rows
+# ℹ 2 more variables: shannon &lt;dbl&gt;, effective_features &lt;dbl&gt;</code></pre>
+</div>
+</div>
+<ul>
+<li>Does it have 942 rows, 471 for each table?
+<ul>
+<li><em>Your answer:</em></li>
+</ul></li>
+<li>Type <code>sum(species$P001_week_18)</code> in the console. Does it match Pi’s library size for that sample?
+<ul>
+<li>*Your answer:22756</li>
+</ul></li>
+<li>Is features detected never more than 220 (species) or 14,226 (genes)?
+<ul>
+<li>*Your answer:14,226</li>
+</ul></li>
+</ul>
+</section>
+<section id="step-2-a-short-report" class="level3">
+<h3 class="anchored" data-anchor-id="step-2-a-short-report">Step 2: a short report</h3>
+<p>Suggested request: <em>Under that data frame, add a summary table with the median, smallest and largest value of every column, separately for each table. Then write three sentences about anything unusual.</em></p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Median, min and max of every numeric column, one block of rows per table.</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>summary_stats <span class="ot">&lt;-</span> sample_summary <span class="sc">|&gt;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(table) <span class="sc">|&gt;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.numeric),</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">list</span>(<span class="at">median =</span> median,</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>                        <span class="at">min    =</span> min,</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>                        <span class="at">max    =</span> max))) <span class="sc">|&gt;</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># reshape so each row is one column-of-the-data-frame, easy to read down</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># names_pattern splits at the LAST underscore, so "library_size_median"</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># becomes column = "library_size", statistic = "median"</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>table,</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="fu">c</span>(<span class="st">"column"</span>, <span class="st">"statistic"</span>),</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_pattern =</span> <span class="st">"(.*)_(.*)"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> statistic, <span class="at">values_from =</span> value)</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>summary_stats</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 12 × 5
+   table   column              median           min           max
+   &lt;chr&gt;   &lt;chr&gt;                &lt;dbl&gt;         &lt;dbl&gt;         &lt;dbl&gt;
+ 1 genes   library_size       1.22e+7 6026167       28835256     
+ 2 genes   features_detected  1.41e+4   13703          14200     
+ 3 genes   fraction_zeros     9.98e-3       0.00183        0.0368
+ 4 genes   max_feature_share  7.96e-2       0.0194         0.324 
+ 5 genes   shannon            1.00e+1       7.21          11.4   
+ 6 genes   effective_features 1.05e+3     148.          2682.    
+ 7 species library_size       2.87e+4     438         155686     
+ 8 species features_detected  2.4 e+1       4             70     
+ 9 species fraction_zeros     8.91e-1       0.682          0.982 
+10 species max_feature_share  6.02e-1       0.116          0.999 
+11 species shannon            1.69e+0       0.0150         4.23  
+12 species effective_features 3.23e+0       1.01          18.8   </code></pre>
+</div>
+</div>
+<p>The three sentences:</p>
+<ol type="1">
+<li>One species sample has a library size of only <strong>438 reads</strong>, against a median near 28,700 (next smallest 2,489) — and its other measurements all sit inside the normal range (features_detected 20 vs median 24, <code>max_feature_share</code> 0.29 vs median 0.602), so depth is its only flagged problem, but a reason to consider dropping it.</li>
+<li>Species samples behave like only ~3.2 equally common species (median <code>effective_features</code>), while gene samples behave like ~1047 equally common genes — the species table is far more lopsided.</li>
+<li>The gene table is the opposite: almost no zero cells at all (median <code>fraction_zeros</code> ≈ 0.01), because nearly every gene is expressed in every sample, and its <code>max_feature_share</code> is small too (median ≈ 0.08) — no single gene hogs a sample the way a species can in a shallow one.</li>
+</ol>
+<ul>
+<li>Which medians were furthest from your Part 1 answers?
+<ul>
+<li><em>Your answer: species effective_features, genes features_detected</em></li>
+</ul></li>
+<li>Did Pi mention the 438-read sample? Did it claim anything you cannot find in the table?
+<ul>
+<li><em>Your answer:</em> yes, yes</li>
+</ul></li>
+</ul>
+</section>
+<section id="step-3-one-number-four-plots" class="level3">
+<h3 class="anchored" data-anchor-id="step-3-one-number-four-plots">Step 3: one number, four plots</h3>
+<p>Suggested request: <em>Plot the library size of every sample four ways: a histogram, the same histogram on a log scale, the samples ranked from smallest to largest, and library size by visit. Use both tables.</em></p>
+<ul>
+<li>Which view makes the 438-read sample obvious, and which hides it? Which would you put in a paper?
+<ul>
+<li><em>Your answer: The ranked view makes it obvious, while the histogram might hide it.</em></li>
+</ul></li>
+</ul>
+<p>The four views, one figure per table:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../figures/library-size-species.png" class="img-fluid figure-img"></p>
+<figcaption>Species table — library size four ways. The rank plot (bottom left) is where the 438-read sample stands alone at the bottom.</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../figures/library-size-genes.png" class="img-fluid figure-img"></p>
+<figcaption>Gene table (RNA-seq) — library size four ways. The gene curve in the rank plot is smooth and even; no sample collapses like the microbiome outlier.</figcaption>
+</figure>
+</div>
+<p>Both tables on one log axis, overlaid:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../figures/library-size-both-log.png" class="img-fluid figure-img"></p>
+<figcaption>Library size histograms of both tables on a log10 x-axis. The two humps sit three orders of magnitude apart; the gene hump is far narrower.</figcaption>
+</figure>
+</div>
+<p>Both tables ranked, with the 438-read sample labelled:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../figures/library-size-ranked-both.png" class="img-fluid figure-img"></p>
+<figcaption>Samples ranked smallest to largest in each table. P028_week_18 is labelled twice: worst in the species table, mid-pack in the gene table.</figcaption>
+</figure>
+</div>
+</section>
+<section id="step-4-features-detected-against-library-size" class="level3">
+<h3 class="anchored" data-anchor-id="step-4-features-detected-against-library-size">Step 4: features detected against library size</h3>
+<p>From here on, write your own requests. Ask for the plot and the Spearman correlation for each table, then ask how many extra genes the correlation amounts to between the shallowest and the deepest samples.</p>
+<ul>
+<li>How many extra genes, out of 14,226?
+<ul>
+<li><em>Your answer:</em> about 300 which is roughly 2% of the gene table. The shallowest sample uses 97% of all genes. Does the plot agree with Pi? yes it does. The spearman correlation is 0.50 which is a moderate positive relationship and the gap from 6M to 29M reads is worth about 240 genes.</li>
+</ul></li>
+</ul>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../figures/features-vs-library.png" class="img-fluid figure-img"></p>
+<figcaption>Features detected against library size, both tables, with the linear trend and Spearman correlation. Genes: rho = 0.5 and only ~312 extra genes between shallowest and deepest. Species: rho = 0.06, detection saturates.</figcaption>
+</figure>
+</div>
+</section>
+<section id="step-5-which-samples-to-drop" class="level3">
+<h3 class="anchored" data-anchor-id="step-5-which-samples-to-drop">Step 5: which samples to drop</h3>
+<p>Ask Pi to suggest a minimum library size and explain it. Then ask how many samples cutoffs of 1,000, 5,000, 10,000 and 20,000 reads would drop, and from which visits and outcomes.</p>
+<p><em>The cutoff I chose, and why:</em> the suggested cut off was 10,000 reads. the median is 28,700. samples below 10k which is 2% of samples carry only 0.36% of reads. the depth below that means relative abundance noise dominates. 20,000 was rejected: it drops 96 samples (20% of all), all skewed to week 18, which would confound depth with visit.</p>
+<ul>
+<li>When you asked what happens if you keep the dropped samples, did Pi’s answer agree with its first reason?
+<ul>
+<li><em>Your answer:</em> shallow samples are compositional with noise. the community looks like a handful of dominant species at inflated shares so they would cluster together in any ordination and show artificially low diversity. The answer agrees with the first reason, which is depth — and the harm of keeping them shows up exactly where depth matters most, in the effective number of species.</li>
+</ul></li>
+</ul>
+</section>
+<section id="step-6-polish-one-figure" class="level3">
+<h3 class="anchored" data-anchor-id="step-6-polish-one-figure">Step 6: polish one figure</h3>
+<p>Improve one plot a request at a time: axis titles in words, log-axis labels like 1k and 10k, your own two colours, text readable from the back of the room, saved as a 6 by 4 inch PNG. Then ask for one thing you would not know how to code yourself.</p>
+<ul>
+<li>Which request got you furthest? How did “make it look nicer” compare with a specific request?
+<ul>
+<li><em>Your answer:</em> The log-axis labels got furthest — they changed what the plot could tell you at a glance. “Make it look nicer” made Pi guess my taste; the specific requests each moved the plot one guaranteed step.</li>
+</ul></li>
+</ul>
+<p>The polished figure, with the QC decision baked in:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../figures/library-size-by-visit-polished.png" class="img-fluid figure-img"></p>
+<figcaption>Polished by-visit figure (6 x 4 in, 300 dpi): words for axes, 1k/10k/10M log labels, own colours, and the nine samples below the 10,000-read cutoff ringed — all week 18.</figcaption>
+</figure>
+</div>
+</section>
+<section id="step-7-argue-with-it" class="level3">
+<h3 class="anchored" data-anchor-id="step-7-argue-with-it">Step 7: argue with it</h3>
+<p>Ask which logarithm <code>log()</code> is in R, then what the effective number would be if the Shannon formula used <code>log2()</code>.</p>
+<ul>
+<li>Did the effective number change? Did Pi say it would?
+<ul>
+<li><em>Your answer:</em> <code>log()</code> in R is the natural log (base e). Switching Shannon to <code>log2()</code> consistently (exponentiating with <code>2^</code>) changes nothing: median effective species 3.25 either way, median effective genes 1,055 either way — the log’s base cancels against the base of the exponent. It only changes if you mix bases (log2 inside, exp() outside): species 3.25 → 5.47, genes 1,055 → 23,008. Pi’s answer: no change if consistent, a big fake change if mixed.</li>
+</ul></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="exercise-2-filters-are-choices" class="level1">
+<h1>Exercise 2: Filters are choices</h1>
+<p>Type <code>/new</code> in Pi before you start. Step 5 builds a file that this afternoon’s notebook reads. If you are short on time, do step 5 first.</p>
+<section id="part-1-predict-no-code-1" class="level2">
+<h2 class="anchored" data-anchor-id="part-1-predict-no-code-1">Part 1 — Predict (no code)</h2>
+<p><strong>1. Keeping only species present in at least 10% of samples: how many of the 220 survive, and what share of reads is lost?</strong></p>
+<ul>
+<li><em>Your answer:</em> 59 of the 220 survive, and only about 0.8% of reads are lost (checked in Step 1 below). Dropping ~73% of the species costs under 1% of the reads because the dropped species are the rare ones, present in only a handful of samples.</li>
+</ul>
+<p><strong>2. The same 10% rule applied to 14,226 genes: how many survive?</strong></p>
+<ul>
+<li><em>Your answer:</em> all 14,226 survive (0.0% of reads lost). Almost every gene is transcribed in almost every sample, so nearly all genes already appear in ≥47 of the 471 samples. Opposite of the species table, which is full of rare bacteria. See Step 1 below.</li>
+</ul>
+<p><strong>3. To compare one species between two samples, what must you do to the counts first?</strong></p>
+<ul>
+<li><em>Your answer:</em> normalise for library size first — divide each sample’s counts by its total reads (e.g.&nbsp;relative abundance or CPM). Raw counts depend on sequencing depth, so a deeper sample looks like it has more of everything; dividing puts both samples on the same scale. Two caveats: this fixes depth but not composition (if one abundant species grows, every other species’ share shrinks even if its own count didn’t), and never feed normalised counts to DESeq2 — it wants raw counts and normalises internally.</li>
+</ul>
+<p><strong>4. If you drop the rare species, does the effective number of species in a sample go up, go down, or stay about the same?</strong></p>
+<ul>
+<li><em>Your answer:</em> about the same, drifting slightly down: median effective number 3.23 → 3.10 (−0.3%). Rare species hold tiny read shares, so their contribution to Shannon diversity (p·log₂(1/p)) is small and removing them barely moves it — the effective number is decided by the common species. The exception is the check in Step 3: in a few week-18 samples the effective number drops by 23–52% (e.g.&nbsp;P017_week_18, 6.29 → 3.05), because those samples contained a species that is rare across the cohort but abundant in them — the filter removes genuinely important features from exactly those samples.</li>
+</ul>
+</section>
+<section id="part-2-ask-look-decide-1" class="level2">
+<h2 class="anchored" data-anchor-id="part-2-ask-look-decide-1">Part 2 — Ask, look, decide</h2>
+<section id="step-1-prevalence-and-the-filter-curve" class="level3">
+<h3 class="anchored" data-anchor-id="step-1-prevalence-and-the-filter-curve">Step 1: prevalence and the filter curve</h3>
+<p>Ask for each feature’s prevalence in both tables and its distribution, then the filter curve: for cutoffs from 0 to 0.9, features kept and share of counts kept.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Prevalence = in how many samples a feature appears (nonzero count).</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Count tables are features in rows, samples in columns, so this is rowSums.</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>sp_counts <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(species[<span class="sc">-</span><span class="dv">1</span>])          <span class="co"># drop the feature-id column</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>sp_prev   <span class="ot">&lt;-</span> <span class="fu">rowSums</span>(sp_counts <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">/</span> <span class="fu">ncol</span>(sp_counts)  <span class="co"># prevalence as a fraction</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co"># The filter curve: features kept and share of reads kept, for each cutoff</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>cutoffs <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="fl">0.9</span>, <span class="at">by =</span> <span class="fl">0.1</span>)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>filter_curve <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">cutoff        =</span> cutoffs,</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">features_kept =</span> <span class="fu">sapply</span>(cutoffs, <span class="cf">function</span>(c) <span class="fu">sum</span>(sp_prev <span class="sc">&gt;=</span> c)),</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">reads_kept    =</span> <span class="fu">sapply</span>(cutoffs, <span class="cf">function</span>(c) {</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>                    keep <span class="ot">&lt;-</span> sp_prev <span class="sc">&gt;=</span> c</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>                    <span class="dv">100</span> <span class="sc">*</span> <span class="fu">sum</span>(sp_counts[keep, ]) <span class="sc">/</span> <span class="fu">sum</span>(sp_counts)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>                  })</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>filter_curve</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 3
+   cutoff features_kept reads_kept
+    &lt;dbl&gt;         &lt;int&gt;      &lt;dbl&gt;
+ 1    0             220      100  
+ 2    0.1            59       99.2
+ 3    0.2            40       97.6
+ 4    0.3            32       95.8
+ 5    0.4            23       94.1
+ 6    0.5            18       90.6
+ 7    0.6            12       86.1
+ 8    0.7             7       75.8
+ 9    0.8             4       67.6
+10    0.9             3       64.7</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Same 10% rule on the gene table</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>gn_counts <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(genes[<span class="sc">-</span><span class="dv">1</span>])</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>gn_prev   <span class="ot">&lt;-</span> <span class="fu">rowSums</span>(gn_counts <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">/</span> <span class="fu">ncol</span>(gn_counts)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="fu">c</span>(<span class="fu">sum</span>(gn_prev <span class="sc">&gt;=</span> <span class="fl">0.10</span>),            <span class="co"># genes kept</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="dv">100</span> <span class="sc">*</span> <span class="fu">sum</span>(gn_counts[gn_prev <span class="sc">&lt;</span> <span class="fl">0.10</span>, ]) <span class="sc">/</span> <span class="fu">sum</span>(gn_counts))  <span class="co"># % reads lost</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 14226     0</code></pre>
+</div>
+</div>
+<ul>
+<li>At 10%, does the species table keep 59 of 220 and lose about 0.8% of reads? Does the gene table keep all 14,226?
+<ul>
+<li><em>Your answer:</em> Yes to both. Species: 59 of 220 kept, 0.8% of reads lost. Genes: all 14,226 kept, 0.0% of reads lost — almost every gene is expressed in at least 47 samples, so a 10% prevalence cutoff removes nothing. The two tables are opposites: the species table is dominated by rare features, the gene table is not.</li>
+</ul></li>
+</ul>
+</section>
+<section id="step-2-a-grid-of-filters" class="level3">
+<h3 class="anchored" data-anchor-id="step-2-a-grid-of-filters">Step 2: a grid of filters</h3>
+<p>Ask for features kept and share of counts kept for every combination, as one summary table and then as a plot:</p>
+<ul>
+<li>species: prevalence 5%, 10% or 25%, crossed with mean relative abundance 0, 0.01% or 0.1%</li>
+<li>genes: mean CPM 1, 5 or 10, crossed with prevalence 0%, 50% or 90%</li>
+</ul>
+<p><em>Why I filtered the species table this way:</em></p>
+<p><em>Why I filtered the gene table this way:</em></p>
+<ul>
+<li>What did your neighbour choose?
+<ul>
+<li><em>Your answer:</em></li>
+</ul></li>
+</ul>
+</section>
+<section id="step-3-did-the-filter-change-anything-you-care-about" class="level3">
+<h3 class="anchored" data-anchor-id="step-3-did-the-filter-change-anything-you-care-about">Step 3: did the filter change anything you care about?</h3>
+<p>Ask for each sample’s effective number of species before and after your filter, as a scatter plot with a 1:1 line. Then the same for features detected.</p>
+<ul>
+<li>Which number moved, and why did the other barely move?
+<ul>
+<li><em>Your answer:</em></li>
+</ul></li>
+</ul>
+</section>
+<section id="step-4-normalise-then-log" class="level3">
+<h3 class="anchored" data-anchor-id="step-4-normalise-then-log">Step 4: normalise, then log</h3>
+<p>Ask for counts per million and <code>log2(cpm + 1)</code>, histograms of one species and one gene before and after the log, then the same gene with <code>+ 0.5</code>, <code>+ 1</code> and <code>+ 10</code>.</p>
+<ul>
+<li>Where does the <code>+ 1</code> change the picture, and where does it make no difference?
+<ul>
+<li><em>Your answer:</em></li>
+</ul></li>
+</ul>
+</section>
+<section id="step-5-the-important-one-the-grouping-column" class="level3">
+<h3 class="anchored" data-anchor-id="step-5-the-important-one-the-grouping-column">Step 5: THE IMPORTANT ONE, the grouping column</h3>
+<p>Suggested request: <em>From the full species table, before any filtering, compute the fraction of each sample’s reads that belong to the genus Lactobacillus. Use <code>03_microbiome_taxonomy.csv</code> to find which species those are. Add a column called <code>community</code> that is <code>lactobacillus</code> if the fraction is 0.5 or more and <code>anaerobe</code> if it is below 0.5. Save <code>sample_id</code>, <code>lacto_fraction</code> and <code>community</code> to <code>data/my_sample_groups.csv</code>.</em></p>
+<p>This afternoon’s notebook reads that file back, and so does Wednesday’s.</p>
+<ul>
+<li>Which species names did Pi count as Lactobacillus? Should any of them not be there?
+<ul>
+<li><em>Your answer:</em></li>
+</ul></li>
+<li>Smallest and largest <code>lacto_fraction</code>? Both should be between 0 and 1.
+<ul>
+<li><em>Your answer:</em></li>
+</ul></li>
+<li>One sample’s Lactobacillus counts divided by its total, worked out by you. Does it match?
+<ul>
+<li><em>Your answer:</em></li>
+</ul></li>
+</ul>
+</section>
+<section id="step-6-the-0.5-cutoff" class="level3">
+<h3 class="anchored" data-anchor-id="step-6-the-0.5-cutoff">Step 6: the 0.5 cutoff</h3>
+<p>Ask for a histogram of <code>lacto_fraction</code> with a line at 0.5, how many samples change group at 0.3 or 0.8, and how the split across visits changes. Then ask Pi to justify 0.5.</p>
+<ul>
+<li>Is its reason about this data, or would it say the same about any dataset?
+<ul>
+<li><em>Your answer:</em></li>
+</ul></li>
+</ul>
+</section>
+<section id="step-7-diversity-by-community" class="level3">
+<h3 class="anchored" data-anchor-id="step-7-diversity-by-community">Step 7: diversity by community</h3>
+<p>Ask for the effective number of species in each community group, as a boxplot on a log scale.</p>
+<ul>
+<li>Which group is more diverse? Is that what you would call healthy?
+<ul>
+<li><em>Your answer:</em></li>
+</ul></li>
+</ul>
+</section>
+<section id="step-8-bar-charts-and-heatmaps" class="level3">
+<h3 class="anchored" data-anchor-id="step-8-bar-charts-and-heatmaps">Step 8: bar charts and heatmaps</h3>
+<p>Ask for the microViz bar chart of the 10 largest genera and a heatmap of the 20 largest with <code>community</code> as a strip along the top, then the same for genes by gene symbol. Then ask for variations: bars ordered by <code>lacto_fraction</code>, split by community, 20 genera instead of 10.</p>
+<ul>
+<li>Which version tells you the most?
+<ul>
+<li><em>Your answer:</em></li>
+</ul></li>
+<li>Two genes whose heatmap rows look alike, and what they do (check one on NCBI Gene yourself):
+<ul>
+<li><em>Your answer:</em></li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="part-3-reach-optional" class="level2">
+<h2 class="anchored" data-anchor-id="part-3-reach-optional">Part 3 — Reach (optional)</h2>
+<p>Ask Pi to turn this notebook into a short QC report as a new Quarto document, ending in <code>## Choices made</code> with every cutoff and filter you chose and one alternative for each. Render it. Then ask Pi to run the same report on <code>group_a_probiotic</code> or <code>group_b_contraception</code>, changing only the data folder.</p>
+<ul>
+<li>Is every choice you made today in the Choices made list? Did the report need more changes than the data folder?
+<ul>
+<li><em>Your answer:</em></li>
+</ul></li>
+</ul>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+      window.quartoDecorateExternalLinks = function (root) {
+     var links = (root || window.document).querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+          if (!link.classList.contains('no-external-icon')) {
+          }
+        }
+      }
+      };
+      window.quartoDecorateExternalLinks(window.document);
+    // Esc closes the popup (WCAG 1.4.13) and focus leaving both trigger and
+    // popup closes it (WCAG 2.4.11); tippy handles neither for interactive popups.
+    const hideOnEscAndFocusOut = {
+      name: 'hideOnEscAndFocusOut',
+      defaultValue: true,
+      fn(instance) {
+        const dismiss = () => {
+          // A show scheduled by the trigger delay would otherwise reopen it
+          instance.clearDelayTimeouts();
+          instance.hide();
+        };
+        const onKeyDown = (event) => {
+          if (event.key !== 'Escape') {
+            return;
+          }
+          // Keep Esc from also reaching page handlers (e.g. reveal.js overview),
+          // except an open reveal.js slide menu, which Esc should close too.
+          // The menu handles keys only when its keyboard option is on.
+          const menuHandlesEsc = window.Reveal?.getPlugin?.('menu')?.isOpen() &&
+            window.Reveal.getConfig().menu?.keyboard !== false;
+          if (!menuHandlesEsc) {
+            event.stopPropagation();
+          }
+          if (instance.popper.contains(window.document.activeElement)) {
+            // Disabled while refocusing so the focus trigger does not reopen it
+            instance.disable();
+            instance.reference.focus();
+            instance.enable();
+          }
+          dismiss();
+        };
+        const onFocusOut = (event) => {
+          const target = event.relatedTarget;
+          if (target && !instance.reference.contains(target) &&
+              !instance.popper.contains(target)) {
+            dismiss();
+          }
+        };
+        // On the trigger too: a click trigger (code-annotations: select) has no
+        // blur handling. Attached for the instance's lifetime so leaving the
+        // trigger also cancels a show still pending on the trigger delay.
+        instance.reference.addEventListener('focusout', onFocusOut);
+        return {
+          onShow() {
+            window.document.addEventListener('keydown', onKeyDown, true);
+            instance.popper.addEventListener('focusout', onFocusOut);
+          },
+          onHide() {
+            window.document.removeEventListener('keydown', onKeyDown, true);
+            instance.popper.removeEventListener('focusout', onFocusOut);
+          },
+          onDestroy() {
+            instance.reference.removeEventListener('focusout', onFocusOut);
+          },
+        };
+      },
+    };
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+        plugins: [hideOnEscAndFocusOut],
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          // Each band is positioned against its own containing block, which is
+          // not the offsetParent of the lines, so place it from client rects.
+          const placeBand = (band, firstEl, lastEl, codeBlock) => {
+            const container = band.offsetParent;
+            if (container === null) {
+              return;
+            }
+            const containerRect = container.getBoundingClientRect();
+            // Reveal.js scales slides with a transform, so convert client
+            // pixels back to the CSS pixels of the container.
+            const scale = containerRect.height / container.offsetHeight || 1;
+            const firstRect = firstEl.getBoundingClientRect();
+            const lastRect = lastEl.getBoundingClientRect();
+            const top = (firstRect.top - containerRect.top) / scale - container.clientTop + container.scrollTop;
+            const height = (lastRect.bottom - firstRect.top) / scale;
+            band.style.top = top - 2 + "px";
+            band.style.height = height + 4 + "px";
+            if (codeBlock) {
+              // Without the copy button wrapper, the containing block is wider
+              // than the code block, so span the code block explicitly.
+              const blockRect = codeBlock.getBoundingClientRect();
+              band.style.left = (blockRect.left - containerRect.left) / scale - container.clientLeft + container.scrollLeft + "px";
+              band.style.width = blockRect.width / scale + "px";
+            }
+          };
+          if (lineIds.length > 0) {
+            const el = window.document.getElementById(lineIds[0]);
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const parent = el.parentElement.parentElement;
+            // cook up a div (if necessary) and position it
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            placeBand(div, el, lastEl, parent.closest("div.sourceCode") || parent);
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            placeBand(gutterDiv, el, lastEl);
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+  <script type="application/javascript">
+  window.quartoScrollableRegionsLabels = {"code":"Scrollable code","output":"Scrollable output"};
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
